@@ -1,0 +1,16 @@
+schema: '2.0'
+stages:
+  rebuild_index:
+    cmd: python backend/data_pipeline/build_index.py backend/storage/raw_sources
+    deps:
+    - path: backend/storage/raw_sources
+      hash: md5
+      md5: 937f8d0bc1bae01add88e36575d4c7a2.dir
+      size: 128
+      nfiles: 1
+    outs:
+    - path: backend/storage/indexed_sources
+      hash: md5
+      md5: 74e8b1853cd30c3a95712e44b854f3bf.dir
+      size: 11324
+      nfiles: 1

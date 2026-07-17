@@ -2,3 +2,5 @@
     remote = origin
 ['remote "origin"']
     url = https://dagshub.com/Schnitze1/-2026-Humanitarian-Innovation-Hackathon.dvc
+    auth = basic
+    user = Schnitze1
