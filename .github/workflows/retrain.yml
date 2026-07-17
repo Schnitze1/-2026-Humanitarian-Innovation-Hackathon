@@ -31,7 +31,7 @@ jobs:
 
       - name: Configure DVC Dagshub Remote
         env:
-          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME || secrets.DAGSHUB_USER }}
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           if [ -z "$DAGSHUB_USERNAME" ] || [ -z "$DAGSHUB_TOKEN" ]; then
