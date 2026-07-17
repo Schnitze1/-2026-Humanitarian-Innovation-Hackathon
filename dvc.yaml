@@ -1,0 +1,7 @@
+stages:
+  rebuild_index:
+    cmd: python backend/data_pipeline/build_index.py backend/storage/raw_sources
+    deps:
+      - backend/storage/raw_sources
+    outs:
+      - backend/storage/indexed_sources

@@ -9,12 +9,12 @@ Help resource-constrained NGOs adopt AI for report drafting without sacrificing 
 ## Features
  
 - **Source-Grounded Drafting**: Retrieval-augmented generation (RAG) restricts the model to ingested source material only.
-- **Automatic Provenance Tracking**: Every generated claim is mapped to the exact source chunk it came from
-- **Consistency Checking**: Rules-based numeric matching plus a lightweight classifier flags claims that don't match their tagged source 
-- **Dual Disclosure Rendering**: Separate donor (full citation) and community (plain-language) views generated from the same underlying provenance data
-- **Offline-First**: Quantized local model as an automatic fallback when hosted API access is unavailable
-- **REST API**: FastAPI-based backend for ingestion, drafting, provenance lookup, consistency checks, and disclosure rendering
-- **Modular Architecture**: Clean separation of ingestion, generation, provenance, consistency checking, and disclosure rendering
+- **Automatic Provenance Tracking**: Every generated claim is mapped to the exact source chunk it came from.
+- **Consistency Checking**: Rules-based numeric matching plus a lightweight classifier flags claims that don't match their tagged source. 
+- **Dual Disclosure Rendering**: Separate donor (full citation) and community (plain-language) views generated from the same underlying provenance data.
+- **Offline-First**: Quantized local model as an automatic fallback when hosted API access is unavailable.
+- **REST API**: FastAPI-based backend for ingestion, drafting, provenance lookup, consistency checks, and disclosure rendering.
+- **Modular Architecture**: Clean separation of ingestion, generation, provenance, consistency checking, and disclosure rendering.
 
 ## Quick Start
 
@@ -27,7 +27,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # Start API server
-python -m uvicorn serve:app --host 127.0.0.1 --port 8000 --reload
+python serve.py
 ```
 
 - Backend Swagger UI: `http://127.0.0.1:8000/docs`
@@ -56,12 +56,12 @@ The frontend expects the backend at `http://127.0.0.1:8000`.
 
 ```bash
 cd backend
-pytest -q
+pytest -v
 ```
 
 **Test coverage:**
 - **Unit tests** — provenance tagger, consistency checker (`test_provenance.py`, `test_consistency.py`)
-- **API tests** — all endpoints via TestClient (`test_api.py`)
+- **API tests** — all endpoints via FastAPI Test client (`test_api.py`)
 - **Integration tests** — end-to-end draft → tag → check → disclose workflow
 - **Error handling** — 422, 404, 400, 500 status codes
 - **Data validation** — empty/malformed source documents, unsupported file types
@@ -73,26 +73,31 @@ pytest -q
 - Node.js 18+ (frontend)
 - fastapi
 - uvicorn
-- sentence-transformers *(or equivalent embedding library for the local vector store)*
-- scikit-learn *(consistency-check classifier)*
-- pandas
+- python-multipart
+- httpx
 - pydantic
+- sentence-transformers *(or equivalent embedding library for the local vector store)*
+- pandas
 - pytest
-See `backend/requirements.txt` for pinned versions *(planned)*.
+- transformers
+- torch>=2.0.0 --index-url https://download.pytorch.org/whl/cu118
+- torchvision>=0.15.0 --index-url https://download.pytorch.org/whl/cu118
+- torchaudio>=2.0.0 --index-url https://download.pytorch.org/whl/cu118
+See `backend/requirements.txt` for pinned versions.
  
 ---
 
 
-## API Endpoints *(planned)*
+## API Endpoints
 
 | # | Method | Endpoint | Description |
 |---|--------|----------|-------------|
 | 1 | `GET` | `/health` | Health check endpoint |
-| 2 | `POST` | `/ingest` | Upload source material (field notes, survey CSV, raw text) for a report |
-| 3 | `POST` | `/draft/{source_id}` | Generate a draft report from ingested source material |
-| 4 | `GET` | `/provenance/{report_id}` | Retrieve source-mapping for every claim in a draft |
-| 5 | `POST` | `/consistency-check/{report_id}` | Run the source-consistency check and return flagged claims |
-| 6 | `GET` | `/disclosure/{report_id}` | Return the rendered donor and community disclosure versions |
+| 2 | `POST` | `/api/ingest` | Upload source material (field notes, survey CSV, raw text) for a report |
+| 3 | `POST` | `/api/draft/{source_id}` | Generate a draft report from ingested source material |
+| 4 | `GET` | `/api/provenance/{report_id}` | Retrieve source-mapping for every claim in a draft |
+| 5 | `POST` | `/api/consistency-check/{report_id}` | Run the source-consistency check and return flagged claims |
+| 6 | `GET` | `/api/disclosure/{report_id}` | Return the rendered donor and community disclosure versions |
 
 ### 1. `GET /health`
 **Response (200 OK):**
@@ -100,7 +105,7 @@ See `backend/requirements.txt` for pinned versions *(planned)*.
 { "status": "ok" }
 ```
 
-### 2. `POST /ingest`
+### 2. `POST /api/ingest`
 **Description:** Accepts source material for a report. Text and CSV supported; documents are chunked and embedded for retrieval.
 **Request Body (multipart/form-data):**
 - `file` — source document (`.txt`, `.csv`, `.md`)
@@ -117,7 +122,7 @@ See `backend/requirements.txt` for pinned versions *(planned)*.
 - `400 Bad Request` — unsupported file type
 - `422 Unprocessable Entity` — empty or unreadable file
 
-### 3. `POST /draft/{source_id}`
+### 3. `POST /api/draft/{source_id}`
 **Description:** Generates a draft report using only the ingested source material (retrieval-augmented generation — the model is restricted to cited chunks).
 **Request Body (application/json):**
 ```json
@@ -140,7 +145,7 @@ See `backend/requirements.txt` for pinned versions *(planned)*.
 - `404 Not Found` — `source_id` does not exist
 - `500 Internal Server Error` — generation service unavailable (falls back to offline model automatically; error only surfaces if both fail)
 
-### 4. `GET /provenance/{report_id}`
+### 4. `GET /api/provenance/{report_id}`
 **Description:** Returns the full span-to-source mapping for a generated report.
 **Response (200 OK):**
 ```json
@@ -152,7 +157,7 @@ See `backend/requirements.txt` for pinned versions *(planned)*.
 }
 ```
 
-### 5. `POST /consistency-check/{report_id}`
+### 5. `POST /api/consistency-check/{report_id}`
 **Description:** Cross-checks numeric and factual claims in the report against their tagged source. Rules-based numeric matching plus a lightweight classifier for textual consistency — not a second generative model.
 **Response (200 OK):**
 ```json
@@ -167,7 +172,7 @@ See `backend/requirements.txt` for pinned versions *(planned)*.
 **Error Responses:**
 - `404 Not Found` — `report_id` does not exist
 
-### 6. `GET /disclosure/{report_id}`
+### 6. `GET /api/disclosure/{report_id}`
 **Description:** Returns both disclosure renderings for the finished report.
 **Response (200 OK):**
 ```json
@@ -192,11 +197,11 @@ graph TB
 
     subgraph "Backend Layer"
         API[FastAPI Server<br/>serve.py]
-        API --> |/ingest| INDEX[Indexing Service]
-        API --> |/draft| GEN[Generation Service]
-        API --> |/provenance| PROV[Provenance Service]
-        API --> |/consistency-check| CHECK[Consistency Service]
-        API --> |/disclosure| RENDER[Disclosure Renderer]
+        API --> |/api/ingest| INDEX[Indexing Service]
+        API --> |/api/draft| GEN[Generation Service]
+        API --> |/api/provenance| PROV[Provenance Service]
+        API --> |/api/consistency-check| CHECK[Consistency Service]
+        API --> |/api/disclosure| RENDER[Disclosure Renderer]
     end
 
     subgraph "Generation Layer"
@@ -225,7 +230,7 @@ graph TB
 ```
 
 **Components:**
-- **Frontend (React, `frontend/`)** — upload source material, review flagged claims, preview donor and community disclosure views. Talks to the backend via REST.
+- **Frontend (React Native / React, `frontend/`)** — upload source material, review flagged claims, preview donor and community disclosure views. Talks to the backend via REST.
 - **Backend (Python/FastAPI, `backend/`)** — ingestion, retrieval-augmented drafting, provenance tracking, consistency checking, disclosure rendering.
 - **Generation layer** — hosted LLM API for online use; quantized local model as an automatic offline fallback for low-connectivity field settings.
 - **Provenance service** — metadata pipeline, not a model. Every generated span is mapped to the retrieved source chunk that produced it.
@@ -234,7 +239,7 @@ graph TB
 
 ---
 
-## Code Structure *(planned)*
+## Code Structure
 
 ### Frontend (`frontend/`)
 ```
@@ -261,8 +266,8 @@ frontend/
 ### Backend (`backend/`)
 ```
 backend/
-├── serve.py                       # FastAPI application entry point
-├── config.py                      # Configuration (online/offline model routing)
+├── serve.py                       # FastAPI application & entry point
+├── config.py                      # Configuration (model paths, consistency threshold)
 ├── requirements.txt
 ├── services/
 │   ├── indexing.py                # Chunk + embed source documents
@@ -291,7 +296,7 @@ backend/
 ## Data Format
  
 ### Input Data
-Source material accepted via `POST /ingest`:
+Source material accepted via `POST /api/ingest`:
 - `.txt` / `.md` — free-text field notes, narrative program updates
 - `.csv` — structured survey or program data (e.g. households reached, distribution logs)
 Internally, ingested material is chunked and embedded into a local vector store (no external upload of raw community data required for the embedding step itself).
@@ -301,7 +306,7 @@ Each generated report (`draft_text`) is accompanied by a `spans` array mapping e
  
 ---
 
-## Output Files *(planned)*
+## Output Files
  
 The pipeline is designed to produce, per report:
  
@@ -310,7 +315,8 @@ The pipeline is designed to produce, per report:
 3. **Consistency flags** (returned by `/consistency-check`, cached alongside the report) — flagged claims with the mismatched source value
 4. **Donor disclosure export** (`.html`) — full citation view for donor submission
 5. **Community disclosure export** (`.txt` / rendered in-app) — plain-language AI-use summary
-### Consistency-checker evaluation *(planned, to be run against a labelled validation set before deployment)*
+
+### Consistency-checker evaluation
  
 | Metric | Purpose |
 |---|---|
@@ -326,7 +332,7 @@ This mirrors standard classifier evaluation practice — the consistency checker
 ---
 
 
-## Input Validation & Error Handling *(planned)*
+## Input Validation & Error Handling
 
 **Frontend**
 - Real-time validation on source upload (file type, non-empty check)
@@ -334,7 +340,7 @@ This mirrors standard classifier evaluation practice — the consistency checker
 - Report generation disabled until source material is successfully ingested
 
 **Backend**
-- File type restricted to supported formats (`.txt`, `.csv`)
+- File type restricted to supported formats (`.txt`, `.csv`, `.md`)
 - Consistency check runs automatically before a report can be marked ready for disclosure
 - Clear error messages with appropriate HTTP status codes (422, 404, 400, 500)
 
@@ -344,10 +350,10 @@ This mirrors standard classifier evaluation practice — the consistency checker
 
 ### Offline fallback not triggering
 - Confirm the quantized local model has been downloaded (`scripts/fetch_offline_model.py`)
-- Check `config.py` for the online→offline failover threshold/timeout setting
+- Check `config.py` for correct model folder structures
 
 ### Consistency check returns no flags on obviously mismatched data
-- Ensure the source document was successfully indexed (`GET /ingest` response should show `chunks_indexed > 0`)
+- Ensure the source document was successfully indexed (`POST /api/ingest` response should show `chunks_indexed > 0`)
 - Rules-based numeric matching requires consistent units/formatting between draft and source — mismatched formatting (e.g. "500" vs "five hundred") is a known edge case
 
 ---

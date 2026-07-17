@@ -1,0 +1,63 @@
+name: Model Retraining and Index Rebuilding
+
+on:
+  push:
+    paths:
+      - 'backend/storage/raw_sources/**'
+      - '**/*.dvc'
+      - 'dvc.yaml'
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dvc[webdav] -r backend/requirements.txt
+
+      - name: Configure DVC Dagshub Remote
+        env:
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          # Configure basic auth for DagsHub's DVC HTTP/WebDAV remote.
+          dvc remote modify origin --projecturl https://dagshub.com/${{ github.repository }}
+          dvc remote modify origin auth basic
+          dvc remote modify origin user $DAGSHUB_USERNAME
+          dvc remote modify origin password $DAGSHUB_TOKEN
+
+      - name: Pull Data from DVC
+        run: |
+          dvc pull
+
+      - name: Rebuild Vector Index via DVC Pipeline
+        run: |
+          dvc repro rebuild_index
+
+      - name: Commit and Push Updated DVC Files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Push rebuilt indexes back to DagsHub DVC storage.
+          dvc push
+          
+          # Commit the updated DVC tracking files if any changes occurred.
+          git add dvc.lock *.dvc
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update dvc indexes [skip ci]" && git push)
