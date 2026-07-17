@@ -1,0 +1,12 @@
+# requirements.txt
+fastapi
+uvicorn
+pydantic
+sentence-transformers
+scikit-learn
+pandas
+numpy
+openai
+google-genai
+pytest
+python-multipart
