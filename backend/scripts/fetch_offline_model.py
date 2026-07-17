@@ -14,7 +14,6 @@ def download_models():
     print(f"Downloading Embedding Model: {config.embed_model_name}")
     SentenceTransformer(config.embed_model_name, cache_folder=str(config.cache_dir))
     print("Embedding model cached successfully.")
-
     print(f"\nDownloading Local LLM Model: {config.offline_llm_name}")
     AutoTokenizer.from_pretrained(config.offline_llm_name, cache_dir=str(config.cache_dir))
     AutoModelForCausalLM.from_pretrained(
