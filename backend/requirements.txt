@@ -1,5 +1,7 @@
-django
-django-ninja
+fastapi
+uvicorn
+httpx
+python-multipart
 pydantic
 sentence-transformers
 scikit-learn
@@ -8,7 +10,6 @@ numpy
 openai
 google-genai
 pytest
-pytest-django
 transformers
 torch>=2.0.0 --index-url https://download.pytorch.org/whl/cu118
 torchvision>=0.15.0 --index-url https://download.pytorch.org/whl/cu118

@@ -25,7 +25,7 @@ from services.disclosure import generate_disclosure_views
 
 app = FastAPI(title="Aiga API", version="1.0.0")
 
-# Configure CORS.
+# Configure allowed origins for CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -36,10 +36,13 @@ app.add_middleware(
 )
 
 
-# Exception handlers matching reference repository style.
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle HTTP exceptions with proper status codes."""
+    """
+    :param request: Incoming FastAPI request object.
+    :param exc: HTTPException instance.
+    :return: JSONResponse with error details.
+    """
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail if isinstance(exc.detail, str) else str(exc.detail)},
@@ -48,7 +51,11 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle validation errors with a consistent JSON format."""
+    """
+    :param request: Incoming FastAPI request object.
+    :param exc: RequestValidationError instance.
+    :return: JSONResponse containing validation details.
+    """
     return JSONResponse(
         status_code=422,
         content={
@@ -60,12 +67,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/health")
 def health():
-    """Health check endpoint to verify API availability."""
+    """
+    :return: Dict containing health status.
+    """
     return {"status": "ok"}
 
 
 @app.post("/api/ingest", response_model=IngestResponse, tags=["Ingestion"])
 async def ingest(file: UploadFile = File(...), program_name: str = "default"):
+    """
+    :param file: Uploaded source file.
+    :param program_name: Name of the project or context category.
+    :return: IngestResponse containing source_id and count of indexed chunks.
+    """
     name = file.filename
     content = await file.read()
 
@@ -90,6 +104,11 @@ async def ingest(file: UploadFile = File(...), program_name: str = "default"):
 
 @app.post("/api/draft/{source_id}", response_model=DraftResponse, tags=["Drafting"])
 def draft_report(source_id: str, payload: DraftRequest):
+    """
+    :param source_id: Source ID of the ingested reference document.
+    :param payload: DraftRequest payload containing report type and audience.
+    :return: DraftResponse containing the drafted report content and spans.
+    """
     try:
         report_data = generate_report(
             source_id, payload.report_type, payload.audience)
@@ -102,6 +121,10 @@ def draft_report(source_id: str, payload: DraftRequest):
 
 @app.get("/api/provenance/{report_id}", response_model=ProvenanceResponse, tags=["Provenance"])
 def get_provenance(report_id: str):
+    """
+    :param report_id: ID of the generated report.
+    :return: ProvenanceResponse containing list of spans and their source chunks.
+    """
     try:
         provenance_data = get_provenance_log(report_id)
         return ProvenanceResponse(**provenance_data)
@@ -111,6 +134,10 @@ def get_provenance(report_id: str):
 
 @app.post("/api/consistency-check/{report_id}", response_model=ConsistencyResponse, tags=["Consistency"])
 def check_consistency(report_id: str):
+    """
+    :param report_id: ID of the report to check.
+    :return: ConsistencyResponse with consistency status and list of flags.
+    """
     try:
         check_results = run_consistency_check(report_id)
         return ConsistencyResponse(**check_results)
@@ -120,6 +147,10 @@ def check_consistency(report_id: str):
 
 @app.get("/api/disclosure/{report_id}", response_model=DisclosureResponse, tags=["Disclosure"])
 def get_disclosure(report_id: str):
+    """
+    :param report_id: ID of the report.
+    :return: DisclosureResponse containing the three view templates.
+    """
     try:
         disclosure_data = generate_disclosure_views(report_id)
         return DisclosureResponse(**disclosure_data)
