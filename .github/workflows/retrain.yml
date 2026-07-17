@@ -34,11 +34,15 @@ jobs:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
+          if [ -z "$DAGSHUB_USERNAME" ] || [ -z "$DAGSHUB_TOKEN" ]; then
+            echo "::error::DAGSHUB_USERNAME or DAGSHUB_TOKEN is missing! Please configure these secrets in your GitHub Repository Settings (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
           # Configure basic auth for DagsHub's DVC HTTP/WebDAV remote.
           dvc remote modify origin url https://dagshub.com/${{ github.repository }}.dvc
           dvc remote modify origin auth basic
-          dvc remote modify origin user $DAGSHUB_USERNAME
-          dvc remote modify origin password $DAGSHUB_TOKEN
+          dvc remote modify origin user "$DAGSHUB_USERNAME"
+          dvc remote modify origin password "$DAGSHUB_TOKEN"
 
       - name: Pull Data from DVC
         run: |
