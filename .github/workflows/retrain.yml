@@ -35,7 +35,7 @@ jobs:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           # Configure basic auth for DagsHub's DVC HTTP/WebDAV remote.
-          dvc remote modify origin --projecturl https://dagshub.com/${{ github.repository }}
+          dvc remote modify origin url https://dagshub.com/${{ github.repository }}.dvc
           dvc remote modify origin auth basic
           dvc remote modify origin user $DAGSHUB_USERNAME
           dvc remote modify origin password $DAGSHUB_TOKEN
