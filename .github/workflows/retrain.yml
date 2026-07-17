@@ -38,11 +38,11 @@ jobs:
             echo "::error::DAGSHUB_USERNAME or DAGSHUB_TOKEN is missing! Please configure these secrets in your GitHub Repository Settings (Settings -> Secrets and variables -> Actions)."
             exit 1
           fi
-          # Configure basic auth for DagsHub's DVC HTTP/WebDAV remote.
-          dvc remote modify origin url https://dagshub.com/${{ github.repository }}.dvc
-          dvc remote modify origin auth basic
-          dvc remote modify origin user "$DAGSHUB_USERNAME"
-          dvc remote modify origin password "$DAGSHUB_TOKEN"
+          # Configure basic auth for DagsHub's DVC HTTP/WebDAV remote in local gitignored config.
+          dvc remote modify origin --local url https://dagshub.com/${{ github.repository }}.dvc
+          dvc remote modify origin --local auth basic
+          dvc remote modify origin --local user "$DAGSHUB_USERNAME"
+          dvc remote modify origin --local password "$DAGSHUB_TOKEN"
 
       - name: Pull Data from DVC
         run: |
@@ -63,5 +63,5 @@ jobs:
           dvc push
           
           # Commit the updated DVC tracking files if any changes occurred.
-          git add dvc.lock *.dvc
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update dvc indexes [skip ci]" && git push)
+          git add dvc.lock backend/storage/*.dvc
+          git diff --quiet dvc.lock backend/storage/*.dvc && git diff --staged --quiet dvc.lock backend/storage/*.dvc || (git commit -m "chore: auto-update dvc indexes [skip ci]" && git push)
