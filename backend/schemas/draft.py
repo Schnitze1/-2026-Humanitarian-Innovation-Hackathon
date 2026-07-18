@@ -12,6 +12,7 @@ class Span(BaseModel):
     span_id: str
     text: str
     source_chunk: str
+    accuracy: int = None
 
 
 class DraftResponse(BaseModel):

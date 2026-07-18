@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/layout/PageHeader";
-import WorkflowSteps from "../components/layout/WorkflowSteps";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ErrorState from "../components/ui/ErrorState";
@@ -20,7 +19,6 @@ function Setup() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { setup, updateSetup } = useReport();
-
   const [clientMode, setClientMode] = useState(
     setup.clientId ? "existing" : "new"
   );
@@ -30,7 +28,6 @@ function Setup() {
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-
   const [form, setForm] = useState({
     programName: setup.programName || "",
     clientId: setup.clientId || "",
@@ -41,6 +38,7 @@ function Setup() {
     reportType: setup.reportType || "",
     audience: setup.audience || "",
     geographicContext: setup.geographicContext || "",
+    customGuidelines: setup.customGuidelines || "",
   });
 
   const loadClients = () => {
@@ -71,8 +69,8 @@ function Setup() {
   const profileOptions =
     clientMode === "existing" && selectedClient?.ngo_profiles?.length
       ? NGO_PROFILES.filter((p) =>
-          selectedClient.ngo_profiles.includes(p.value)
-        )
+        selectedClient.ngo_profiles.includes(p.value)
+      )
       : NGO_PROFILES;
 
   const topicOptions =
@@ -114,7 +112,10 @@ function Setup() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setFormError(null);
-    if (!validate()) return;
+    if (!validate()) {
+      setFormError("Please fill out all required fields marked in red above.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -122,9 +123,9 @@ function Setup() {
       let clientName = form.clientName;
 
       if (clientMode === "new") {
-        // Persist client in Postgres so ingest can link client_id + dataset_topic
         const created = await createClient({
           name: form.clientName.trim(),
+          customGuidelines: form.customGuidelines.trim(),
           ngoProfiles: [form.primaryProfile],
           datasetTopics: [form.datasetTopic],
         });
@@ -161,7 +162,7 @@ function Setup() {
 
   return (
     <>
-      <WorkflowSteps currentPath={pathname} />
+
       <PageHeader
         eyebrow="Step 1"
         title="Report setup"
@@ -213,9 +214,8 @@ function Setup() {
                   aria-labelledby="client-mode-label"
                 >
                   <label
-                    className={`client-mode__option${
-                      clientMode === "new" ? " is-active" : ""
-                    }`}
+                    className={`client-mode__option${clientMode === "new" ? " is-active" : ""
+                      }`}
                   >
                     <input
                       type="radio"
@@ -229,9 +229,8 @@ function Setup() {
                     Create new client
                   </label>
                   <label
-                    className={`client-mode__option${
-                      clientMode === "existing" ? " is-active" : ""
-                    }`}
+                    className={`client-mode__option${clientMode === "existing" ? " is-active" : ""
+                      }`}
                   >
                     <input
                       type="radio"
@@ -247,51 +246,79 @@ function Setup() {
               </div>
 
               {clientMode === "new" ? (
-                <div className="form-field form-field--full">
-                  <label htmlFor="clientName">NGO / organisation name</label>
-                  <input
-                    id="clientName"
-                    value={form.clientName}
-                    onChange={(e) => setField("clientName", e.target.value)}
-                    placeholder="Organisation registered in Postgres"
-                  />
-                  {fieldErrors.clientName ? (
-                    <p className="field-error">{fieldErrors.clientName}</p>
-                  ) : (
-                    <p className="hint">
-                      Creates a row via <code>POST /api/clients</code>.
-                    </p>
-                  )}
-                </div>
+                <>
+                  <div className="form-field form-field--full">
+                    <label htmlFor="clientName">NGO / organisation name</label>
+                    <input
+                      id="clientName"
+                      value={form.clientName}
+                      onChange={(e) => setField("clientName", e.target.value)}
+                      placeholder="Organisation registered in Postgres"
+                    />
+                    {fieldErrors.clientName ? (
+                      <p className="field-error">{fieldErrors.clientName}</p>
+                    ) : (
+                      <p className="hint">
+                        Creates a row via <code>POST /api/clients</code>.
+                      </p>
+                    )}
+                  </div>
+                  <div className="form-field form-field--full">
+                    <label htmlFor="customGuidelines">Custom Operational Guidelines (Optional)</label>
+                    <textarea
+                      id="customGuidelines"
+                      value={form.customGuidelines}
+                      onChange={(e) => setField("customGuidelines", e.target.value)}
+                      placeholder="Enter specific ethical rules, reporting standards, or cultural nuances the AI should follow..."
+                      rows={4}
+                    />
+                    <p className="hint">Injected directly into the LLM system prompt.</p>
+                  </div>
+                </>
               ) : (
-                <div className="form-field form-field--full">
-                  <label htmlFor="clientId">Select client</label>
-                  <select
-                    id="clientId"
-                    value={form.clientId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      const match = clients.find((c) => c.id === id);
-                      setForm((prev) => ({
-                        ...prev,
-                        clientId: id,
-                        clientName: match?.name || "",
-                        primaryProfile: "",
-                        datasetTopic: "",
-                      }));
-                    }}
-                  >
-                    <option value="">Choose a client…</option>
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldErrors.clientId ? (
-                    <p className="field-error">{fieldErrors.clientId}</p>
-                  ) : null}
-                </div>
+                <>
+                  <div className="form-field form-field--full">
+                    <label htmlFor="clientId">Select client</label>
+                    <select
+                      id="clientId"
+                      value={form.clientId}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        const match = clients.find((c) => c.id === id);
+                        setForm((prev) => ({
+                          ...prev,
+                          clientId: id,
+                          clientName: match?.name || "",
+                          primaryProfile: "",
+                          datasetTopic: "",
+                        }));
+                      }}
+                    >
+                      <option value="">Choose a client…</option>
+                      {clients.map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.name}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldErrors.clientId ? (
+                      <p className="field-error">{fieldErrors.clientId}</p>
+                    ) : null}
+                  </div>
+                  {selectedClient?.custom_guidelines && (
+                    <div className="form-field form-field--full">
+                      <label>Custom Operational Guidelines (Read-Only)</label>
+                      <textarea
+                        value={selectedClient.custom_guidelines}
+                        readOnly
+                        rows={6}
+                        className="is-read-only"
+                        style={{ backgroundColor: "#f4f4f5", color: "#52525b", cursor: "not-allowed", border: "1px solid #e4e4e7" }}
+                      />
+                      <p className="hint">These strict operational rules are currently active for this NGO.</p>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="form-field">
@@ -398,9 +425,6 @@ function Setup() {
                   }
                   placeholder="What should this report help the team understand or communicate?"
                 />
-                <p className="hint hint--local">
-                  Local only — not sent to the API yet.
-                </p>
               </div>
 
               <div className="form-field form-field--full">
@@ -413,9 +437,6 @@ function Setup() {
                   }
                   placeholder="e.g. Eastern Rift Valley, Kenya"
                 />
-                <p className="hint hint--local">
-                  Local only — not sent to the API yet.
-                </p>
               </div>
             </div>
 

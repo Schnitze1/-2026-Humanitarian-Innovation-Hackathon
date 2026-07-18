@@ -1,25 +1,19 @@
 :root {
-  /* Brand palette — calm, humanitarian, trustworthy */
-  --color-bg: #f7f6f3;
+  --color-bg: #EFF0EB;
   --color-surface: #ffffff;
-  --color-surface-muted: #f0eeea;
-  --color-border: #e2dfd8;
+  --color-surface-muted: #e4e6df;
+  --color-border: #d5d8cd;
   --color-border-strong: #c9c4ba;
-
   --color-navy: #1a2b4a;
   --color-navy-deep: #121f36;
   --color-navy-soft: #2c3f5f;
   --color-navy-muted: #5a6b84;
-
   --color-coral: #e07a5f;
   --color-coral-hover: #c96a52;
   --color-coral-soft: #f5e6e1;
-
   --color-text: #1a2b4a;
   --color-text-muted: #5a6b84;
   --color-text-inverse: #f7f6f3;
-
-  /* Status */
   --color-verified: #2d6a4f;
   --color-verified-bg: #e8f3ed;
   --color-warning: #b45309;
@@ -27,7 +21,6 @@
   --color-review: #9b2226;
   --color-review-bg: #fde8e8;
 
-  /* Layout */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -39,9 +32,8 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   --space-2xl: 3rem;
-  --max-width: 1100px;
+  --max-width: 1400px;
 
-  /* Type */
   --font-sans: "DM Sans", "Segoe UI", sans-serif;
   --font-serif: "Libre Baskerville", Georgia, serif;
 }
@@ -102,8 +94,6 @@ textarea {
   min-height: 100vh;
 }
 
-/* App shell */
-
 .app-shell {
   min-height: 100vh;
   display: flex;
@@ -139,16 +129,67 @@ textarea {
   gap: var(--space-sm) var(--space-md);
 }
 
-.app-nav a {
-  color: var(--color-navy-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
+.progress-bar {
+  display: flex;
+  gap: var(--space-xl);
+  margin-left: auto;
+}
+
+.progress-bar__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text-muted);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.progress-bar__step.locked {
+  opacity: 0.5;
+}
+
+.progress-bar__step:not(.locked):hover {
+  color: var(--color-text);
+}
+
+.progress-bar__step.active,
+.progress-bar__step.completed {
+  color: var(--color-text);
   font-weight: 500;
 }
 
-.app-nav a:hover,
-.app-nav a.active {
-  color: var(--color-navy);
+.progress-bar__indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.progress-bar__step.active .progress-bar__indicator {
+  background: var(--color-navy);
+  color: var(--color-surface);
+  box-shadow: 0 0 0 4px var(--color-navy-soft);
+}
+
+.progress-bar__step.completed .progress-bar__indicator {
+  background: var(--color-verified);
+  color: var(--color-surface);
+}
+
+.progress-bar__label {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .progress-bar__label {
+    display: none;
+  }
 }
 
 .app-main {
@@ -169,4 +210,77 @@ textarea {
   .app-main {
     padding: var(--space-lg) var(--space-md) var(--space-xl);
   }
+}
+
+
+.custom-tooltip-container {
+  position: relative;
+  display: inline;
+  cursor: help;
+}
+
+.custom-tooltip-content {
+  visibility: hidden;
+  background-color: var(--color-navy-deep);
+  color: #fff;
+  text-align: left;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  position: absolute;
+  z-index: 50;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 320px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+.custom-tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--color-navy-deep) transparent transparent transparent;
+}
+
+.custom-tooltip-container:hover .custom-tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+
+.custom-tooltip-content.warning-tooltip {
+  background-color: var(--color-review);
+}
+
+.custom-tooltip-content.warning-tooltip::after {
+  border-color: var(--color-review) transparent transparent transparent;
+}
+
+.tooltip-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.tooltip-markdown th,
+.tooltip-markdown td {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tooltip-markdown th {
+  background-color: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
 }

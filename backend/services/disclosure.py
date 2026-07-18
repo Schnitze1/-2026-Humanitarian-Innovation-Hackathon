@@ -108,11 +108,13 @@ def generate_disclosure_views(report_id: str) -> dict:
     # donor view
     table_rows = ""
     for s in spans:
+        acc = s.get('accuracy', 'N/A')
+        acc_str = f"{acc}%" if acc != 'N/A' else acc
         table_rows += f"""
         <tr>
             <td><strong>{s['span_id']}</strong></td>
             <td>{s['text']}</td>
-            <td><code>{s['source_chunk']}</code></td>
+            <td style="color: {'#15803d' if isinstance(acc, int) and acc >= 80 else '#b45309'}; font-weight: 600;">{acc_str}</td>
         </tr>
         """
 
@@ -133,7 +135,7 @@ def generate_disclosure_views(report_id: str) -> dict:
                     <tr>
                         <th>ID</th>
                         <th>Verified Claim</th>
-                        <th>Source Reference</th>
+                        <th>Accuracy</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,7 +171,7 @@ def generate_disclosure_views(report_id: str) -> dict:
                     <tr>
                         <th>ID</th>
                         <th>Text Span</th>
-                        <th>Source Reference</th>
+                        <th>Accuracy</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -2,7 +2,6 @@ const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const ACCEPTED_EXTENSIONS = [".txt", ".csv", ".md"];
 export const ACCEPTED_ACCEPT_ATTR = ".txt,.csv,.md,text/plain,text/csv,text/markdown";
-
 export class ApiError extends Error {
   constructor(message, { status, details } = {}) {
     super(message);
@@ -62,13 +61,14 @@ export function checkHealth() {
   return request("/health");
 }
 
-/** POST /api/clients — { name, ngo_profiles, dataset_topics } */
-export function createClient({ name, ngoProfiles, datasetTopics }) {
+/** POST /api/clients — { name, custom_guidelines, ngo_profiles, dataset_topics } */
+export function createClient({ name, customGuidelines, ngoProfiles, datasetTopics }) {
   return request("/api/clients", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name,
+      custom_guidelines: customGuidelines || null,
       ngo_profiles: ngoProfiles,
       dataset_topics: datasetTopics,
     }),

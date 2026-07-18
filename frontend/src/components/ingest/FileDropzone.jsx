@@ -11,9 +11,14 @@ function FileDropzone({ disabled, onFileSelected, selectedFile }) {
   const [localError, setLocalError] = useState(null);
 
   const handleFiles = (fileList) => {
-    const file = fileList?.[0];
-    if (!file) return;
+    if (!fileList || fileList.length === 0) return;
 
+    if (fileList.length > 1) {
+      setLocalError("Please upload only one file. Multiple source files are not supported for a single report.");
+      return;
+    }
+
+    const file = fileList[0];
     if (!isAcceptedUpload(file)) {
       setLocalError(
         `Unsupported file type. Accepted: ${ACCEPTED_EXTENSIONS.join(", ")}`

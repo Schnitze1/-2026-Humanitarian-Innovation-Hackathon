@@ -99,6 +99,13 @@
   margin: 0;
 }
 
+.client-mode__option input[type="radio"] {
+  width: 16px !important;
+  height: 16px !important;
+  min-height: unset !important;
+  flex-shrink: 0;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/layout/PageHeader";
-import WorkflowSteps from "../components/layout/WorkflowSteps";
 import FileDropzone from "../components/ingest/FileDropzone";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -23,9 +22,8 @@ function Upload() {
   } = useReport();
 
   const [file, setFile] = useState(null);
-  const [status, setStatus] = useState("idle"); // idle | uploading | error
+  const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState(null);
-
   const setupReady = Boolean(
     setup.programName && setup.clientId && setup.datasetTopic
   );
@@ -80,7 +78,7 @@ function Upload() {
 
   return (
     <>
-      <WorkflowSteps currentPath={pathname} />
+
       <PageHeader
         eyebrow="Step 2"
         title="Source upload"
