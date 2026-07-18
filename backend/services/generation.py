@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import config
 from services.indexing import search_similar_chunks
 
-citation_regex = re.compile(r'\[(src_[a-fA-F0-9]+#c\d+)\]')
+citation_regex = re.compile(r"\[(src_[a-fA-F0-9]+#c\d+)\]")
 _tokenizer = None
 _model = None
 
@@ -34,7 +34,7 @@ def parse_citations(text: str) -> tuple[str, list[dict]]:
     :param text: Raw text generated containing source citations like [src_xxxx#cxx].
     :return: A tuple containing (cleaned_text_without_bracketed_citations, list_of_parsed_spans).
     """
-    raw_sentences = re.split(r'(?<=[.!?])\s+', text)
+    raw_sentences = re.split(r"(?<=[.!?])\s+", text)
     spans = []
     cleaned_sentences = []
 
@@ -44,17 +44,23 @@ def parse_citations(text: str) -> tuple[str, list[dict]]:
         match = citation_regex.search(sent)
         if match:
             source_chunk = match.group(1)
-            cleaned_sent = re.sub(r'\s*\[src_[a-fA-F0-9]+#c\d+\]\s*(\.|\?|!)', r'\1', sent)
-            cleaned_sent = re.sub(r'\s*\[src_[a-fA-F0-9]+#c\d+\]\s*', '', cleaned_sent).strip()
+            cleaned_sent = re.sub(
+                r"\s*\[src_[a-fA-F0-9]+#c\d+\]\s*(\.|\?|!)", r"\1", sent
+            )
+            cleaned_sent = re.sub(
+                r"\s*\[src_[a-fA-F0-9]+#c\d+\]\s*", "", cleaned_sent
+            ).strip()
             cleaned_sentences.append(cleaned_sent)
             span_text = cleaned_sent
-            if span_text.endswith(('.', '?', '!')):
+            if span_text.endswith((".", "?", "!")):
                 span_text = span_text[:-1].strip()
-            spans.append({
-                "span_id": f"s{len(spans) + 1}",
-                "text": span_text,
-                "source_chunk": source_chunk
-            })
+            spans.append(
+                {
+                    "span_id": f"s{len(spans) + 1}",
+                    "text": span_text,
+                    "source_chunk": source_chunk,
+                }
+            )
         else:
             cleaned_sentences.append(sent.strip())
 
@@ -62,7 +68,13 @@ def parse_citations(text: str) -> tuple[str, list[dict]]:
     return cleaned_text, spans
 
 
-def generate_report(source_id: str, report_type: str, audience: str, ngo_profile: str = "general", dataset_topic: str = "General Context") -> dict:
+def generate_report(
+    source_id: str,
+    report_type: str,
+    audience: str,
+    ngo_profile: str = "general",
+    dataset_topic: str = "General Context",
+) -> dict:
     """
     :param source_id: Source ID of the ingested reference document.
     :param report_type: Type of report to generate (e.g., public, donor, internal).
@@ -83,10 +95,13 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
 
     tokenizer, model = get_offline_llm()
     raw_content = ""
-    
+
     try:
         import profiles
-        ngo_instruction = profiles.NGO_PROFILES.get(ngo_profile, profiles.NGO_PROFILES["general"])
+
+        ngo_instruction = profiles.NGO_PROFILES.get(
+            ngo_profile, profiles.NGO_PROFILES["general"]
+        )
     except Exception:
         ngo_instruction = "General Non-Governmental Organization - Focus on overarching humanitarian impact."
 
@@ -102,34 +117,50 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
         try:
             context = "\n".join([f"[{c['chunk_id']}] {c['text']}" for c in top_chunks])
             messages = [
-                {"role": "system", "content": (
-                    "You are a professional AI reporting assistant for NGOs. "
-                    f"Your client profile: {ngo_instruction}\n"
-                    f"You must interpret the provided data through the lens of this NGO profile, highlighting relevant insights where possible.\n"
-                    "You synthesize dense data into a coherent, natural language paragraph. "
-                    "You NEVER output bullet points or raw lists. You ALWAYS write in full sentences.\n\n"
-                    "EXAMPLE INPUT CONTEXT:\n"
-                    "[src_123#c1] Data Record: COMMODITY is Food, OBS_VALUE is 90.5.\n"
-                    "EXAMPLE OUTPUT:\n"
-                    "The data indicates that the observed value for food commodities reached 90.5 [src_123#c1]. This demonstrates a key metric for the region."
-                )},
-                {"role": "user", "content": (
-                    f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n"
-                    f"Connect the data to our NGO profile's perspective and the topic of '{dataset_topic}'. If the connection is abstract, simply summarize the data accurately.\n"
-                    f"Focus ONLY on factual accuracy and original synthesis to maintain trust with our donors.\n\n"
-                    f"RULES:\n"
-                    f"1. Write a fluent paragraph. NO LISTS. NO BULLET POINTS. Do not just copy the data fields.\n"
-                    f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n"
-                    f"3. Maintain rigorous factual accuracy and original phrasing.\n"
-                    f"4. NEVER refuse to write the report. You must always provide a summary of the data.\n\n"
-                    f"CONTEXT:\n{context}\n\n"
-                    f"REPORT:"
-                )}
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional AI reporting assistant for NGOs. "
+                        f"Your client profile: {ngo_instruction}\n"
+                        f"You must interpret the provided data through the lens of this NGO profile, highlighting relevant insights where possible.\n"
+                        "You synthesize dense data into a coherent, natural language paragraph. "
+                        "You NEVER output bullet points or raw lists. You ALWAYS write in full sentences.\n\n"
+                        "EXAMPLE INPUT CONTEXT:\n"
+                        "[src_123#c1] Data Record: COMMODITY is Food, OBS_VALUE is 90.5.\n"
+                        "EXAMPLE OUTPUT:\n"
+                        "The data indicates that the observed value for food commodities reached 90.5 [src_123#c1]. This demonstrates a key metric for the region."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n"
+                        f"Connect the data to our NGO profile's perspective and the topic of '{dataset_topic}'. If the connection is abstract, simply summarize the data accurately.\n"
+                        f"Focus ONLY on factual accuracy and original synthesis to maintain trust with our donors.\n\n"
+                        f"RULES:\n"
+                        f"1. Write a fluent paragraph. NO LISTS. NO BULLET POINTS. Do not just copy the data fields.\n"
+                        f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n"
+                        f"3. Maintain rigorous factual accuracy and original phrasing.\n"
+                        f"4. NEVER refuse to write the report. You must always provide a summary of the data.\n\n"
+                        f"CONTEXT:\n{context}\n\n"
+                        f"REPORT:"
+                    ),
+                },
             ]
-            prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            prompt = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
             inputs = tokenizer(prompt, return_tensors="pt")
-            outputs = model.generate(**inputs, max_new_tokens=400, temperature=0.7, do_sample=True, repetition_penalty=1.1)
-            raw_content = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=400,
+                temperature=0.7,
+                do_sample=True,
+                repetition_penalty=1.1,
+            )
+            raw_content = tokenizer.decode(
+                outputs[0][inputs.input_ids.shape[1] :], skip_special_tokens=True
+            )
         except Exception:
             pass
 
@@ -137,18 +168,14 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
         # Offline dummy fallback (Testing)
         sentences = []
         for c in top_chunks:
-            text = c['text']
-            if text.endswith('.'):
+            text = c["text"]
+            if text.endswith("."):
                 text = text[:-1]
             sentences.append(f"{text} [{c['chunk_id']}].")
         raw_content = " ".join(sentences)
     cleaned_text, spans = parse_citations(raw_content)
     report_id = f"rep_{uuid.uuid4().hex[:8]}"
-    report_data = {
-        "report_id": report_id,
-        "content": cleaned_text,
-        "spans": spans
-    }
+    report_data = {"report_id": report_id, "content": cleaned_text, "spans": spans}
 
     report_file = config.reports_dir / f"{report_id}.json"
     with open(report_file, "w", encoding="utf-8") as f:

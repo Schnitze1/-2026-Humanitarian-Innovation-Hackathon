@@ -4,7 +4,7 @@ from unittest.mock import patch
 from services.consistency import (
     check_numeric_consistency,
     check_semantic_consistency,
-    run_consistency_check
+    run_consistency_check,
 )
 
 
@@ -53,7 +53,11 @@ def test_run_consistency_check(mock_embed):
     # Setup mock index chunk.
     source_id = "src_019"
     index_data = [
-        {"chunk_id": "src_019#c0", "text": "The team distributed 500 kits.", "embedding": [0.1, 0.2]}
+        {
+            "chunk_id": "src_019#c0",
+            "text": "The team distributed 500 kits.",
+            "embedding": [0.1, 0.2],
+        }
     ]
     with open(config.index_dir / f"{source_id}.json", "w", encoding="utf-8") as f:
         json.dump(index_data, f)
@@ -64,8 +68,12 @@ def test_run_consistency_check(mock_embed):
         "report_id": report_id,
         "content": "The team distributed 400 kits.",
         "spans": [
-            {"span_id": "s1", "text": "The team distributed 400 kits", "source_chunk": "src_019#c0"}
-        ]
+            {
+                "span_id": "s1",
+                "text": "The team distributed 400 kits",
+                "source_chunk": "src_019#c0",
+            }
+        ],
     }
     with open(config.reports_dir / f"{report_id}.json", "w", encoding="utf-8") as f:
         json.dump(report_data, f)

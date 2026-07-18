@@ -19,7 +19,7 @@ def generate_disclosure_views(report_id: str) -> dict:
     spans = report_data.get("spans", [])
     content = report_data.get("content", "")
 
-    # styling 
+    # styling
     base_style = """
     <style>
         body {
@@ -185,5 +185,5 @@ def generate_disclosure_views(report_id: str) -> dict:
         "report_id": report_id,
         "donor_view": donor_view.strip(),
         "public_view": public_view.strip(),
-        "internal_view": internal_view.strip()
+        "internal_view": internal_view.strip(),
     }

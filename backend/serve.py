@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from typing import List
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile, Depends, Form
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,7 +53,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     """
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail if isinstance(exc.detail, str) else str(exc.detail)},
+        content={
+            "detail": exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+        },
     )
 
 
@@ -83,19 +86,34 @@ def health():
 @app.post("/api/clients", response_model=ClientResponse, tags=["Clients"])
 def create_client(client: ClientCreate, db: Session = Depends(get_db)):
     db_client = Client(
-        name=client.name, 
-        ngo_profiles=json.dumps(client.ngo_profiles), 
-        dataset_topics=json.dumps(client.dataset_topics)
+        name=client.name,
+        ngo_profiles=json.dumps(client.ngo_profiles),
+        dataset_topics=json.dumps(client.dataset_topics),
     )
     db.add(db_client)
     db.commit()
     db.refresh(db_client)
     return ClientResponse(
-        id=db_client.id, 
-        name=db_client.name, 
-        ngo_profiles=db_client.get_profiles(), 
-        dataset_topics=db_client.get_topics()
+        id=db_client.id,
+        name=db_client.name,
+        ngo_profiles=db_client.get_profiles(),
+        dataset_topics=db_client.get_topics(),
     )
+
+
+@app.get("/api/clients", response_model=List[ClientResponse], tags=["Clients"])
+def get_all_clients(db: Session = Depends(get_db)):
+    db_clients = db.query(Client).all()
+    return [
+        ClientResponse(
+            id=c.id,
+            name=c.name,
+            ngo_profiles=c.get_profiles(),
+            dataset_topics=c.get_topics(),
+        )
+        for c in db_clients
+    ]
+
 
 @app.get("/api/clients/{client_id}", response_model=ClientResponse, tags=["Clients"])
 def get_client(client_id: str, db: Session = Depends(get_db)):
@@ -103,19 +121,20 @@ def get_client(client_id: str, db: Session = Depends(get_db)):
     if not db_client:
         raise HTTPException(status_code=404, detail="Client not found")
     return ClientResponse(
-        id=db_client.id, 
-        name=db_client.name, 
-        ngo_profiles=db_client.get_profiles(), 
-        dataset_topics=db_client.get_topics()
+        id=db_client.id,
+        name=db_client.name,
+        ngo_profiles=db_client.get_profiles(),
+        dataset_topics=db_client.get_topics(),
     )
+
 
 @app.post("/api/ingest", response_model=IngestResponse, tags=["Ingestion"])
 async def ingest(
-    file: UploadFile = File(...), 
+    file: UploadFile = File(...),
     program_name: str = "default",
     client_id: str = None,
     dataset_topic: str = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     :param file: Uploaded source file.
@@ -126,7 +145,9 @@ async def ingest(
     content = await file.read()
 
     if not content or len(content.strip()) == 0:
-        raise HTTPException(status_code=422, detail="File content is empty or unprocessable")
+        raise HTTPException(
+            status_code=422, detail="File content is empty or unprocessable"
+        )
 
     _, ext = os.path.splitext(name.lower())
     if ext not in [".txt", ".csv", ".md"]:
@@ -134,16 +155,15 @@ async def ingest(
 
     try:
         source_id, chunks_count = ingest_document(content, name, program_name)
-        
+
         if client_id and dataset_topic:
-            db_dataset = Dataset(source_id=source_id, client_id=client_id, dataset_topic=dataset_topic)
+            db_dataset = Dataset(
+                source_id=source_id, client_id=client_id, dataset_topic=dataset_topic
+            )
             db.add(db_dataset)
             db.commit()
-            
-        return IngestResponse(
-            source_id=source_id,
-            chunks_indexed=chunks_count
-        )
+
+        return IngestResponse(source_id=source_id, chunks_indexed=chunks_count)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
@@ -161,7 +181,7 @@ def draft_report(source_id: str, payload: DraftRequest, db: Session = Depends(ge
         # Fetch Dataset details from DB
         dataset = db.query(Dataset).filter(Dataset.source_id == source_id).first()
         topic = dataset.dataset_topic if dataset else "General Context"
-        
+
         ngo_profile_target = "general"
         if dataset:
             client = db.query(Client).filter(Client.id == dataset.client_id).first()
@@ -173,20 +193,26 @@ def draft_report(source_id: str, payload: DraftRequest, db: Session = Depends(ge
                     ngo_profile_target = profiles[0]
 
         report_data = generate_report(
-            source_id, 
-            payload.report_type, 
-            payload.audience, 
+            source_id,
+            payload.report_type,
+            payload.audience,
             ngo_profile=ngo_profile_target,
-            dataset_topic=topic
+            dataset_topic=topic,
         )
         return DraftResponse(**report_data)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Source ID {source_id} does not exist")
+        raise HTTPException(
+            status_code=404, detail=f"Source ID {source_id} does not exist"
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
 
 
-@app.get("/api/provenance/{report_id}", response_model=ProvenanceResponse, tags=["Provenance"])
+@app.get(
+    "/api/provenance/{report_id}",
+    response_model=ProvenanceResponse,
+    tags=["Provenance"],
+)
 def get_provenance(report_id: str):
     """
     :param report_id: ID of the generated report.
@@ -196,10 +222,16 @@ def get_provenance(report_id: str):
         provenance_data = get_provenance_log(report_id)
         return ProvenanceResponse(**provenance_data)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Report ID {report_id} does not exist")
+        raise HTTPException(
+            status_code=404, detail=f"Report ID {report_id} does not exist"
+        )
 
 
-@app.post("/api/consistency-check/{report_id}", response_model=ConsistencyResponse, tags=["Consistency"])
+@app.post(
+    "/api/consistency-check/{report_id}",
+    response_model=ConsistencyResponse,
+    tags=["Consistency"],
+)
 def check_consistency(report_id: str):
     """
     :param report_id: ID of the report to check.
@@ -209,10 +241,16 @@ def check_consistency(report_id: str):
         check_results = run_consistency_check(report_id)
         return ConsistencyResponse(**check_results)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Report ID {report_id} does not exist")
+        raise HTTPException(
+            status_code=404, detail=f"Report ID {report_id} does not exist"
+        )
 
 
-@app.get("/api/disclosure/{report_id}", response_model=DisclosureResponse, tags=["Disclosure"])
+@app.get(
+    "/api/disclosure/{report_id}",
+    response_model=DisclosureResponse,
+    tags=["Disclosure"],
+)
 def get_disclosure(report_id: str):
     """
     :param report_id: ID of the report.
@@ -222,9 +260,12 @@ def get_disclosure(report_id: str):
         disclosure_data = generate_disclosure_views(report_id)
         return DisclosureResponse(**disclosure_data)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Report ID {report_id} does not exist")
+        raise HTTPException(
+            status_code=404, detail=f"Report ID {report_id} does not exist"
+        )
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("serve:app", host="127.0.0.1", port=8000, reload=True)

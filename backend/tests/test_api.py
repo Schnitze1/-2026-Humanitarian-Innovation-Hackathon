@@ -3,6 +3,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 from serve import app
 
+
 class MockEmbeddingModel:
     def encode(self, texts):
         return [[0.1, 0.2]] * len(texts)
@@ -10,9 +11,16 @@ class MockEmbeddingModel:
 
 @pytest.fixture(autouse=True)
 def mock_embedder():
-    with patch("services.indexing.get_embedding_model", return_value=MockEmbeddingModel()):
-        with patch("services.consistency.get_embedding_model", return_value=MockEmbeddingModel()):
-            with patch("services.generation.get_offline_llm", return_value=(None, None)):
+    with patch(
+        "services.indexing.get_embedding_model", return_value=MockEmbeddingModel()
+    ):
+        with patch(
+            "services.consistency.get_embedding_model",
+            return_value=MockEmbeddingModel(),
+        ):
+            with patch(
+                "services.generation.get_offline_llm", return_value=(None, None)
+            ):
                 yield
 
 
@@ -36,7 +44,9 @@ def test_api_ingest_empty_file():
 
 
 def test_api_ingest_success_txt():
-    response = client.post("/api/ingest", files={"file": ("test.txt", b"Hello world\n\nSecond chunk")})
+    response = client.post(
+        "/api/ingest", files={"file": ("test.txt", b"Hello world\n\nSecond chunk")}
+    )
     assert response.status_code == 200
     data = response.json()
     assert "source_id" in data
@@ -53,7 +63,10 @@ def test_api_ingest_success_csv():
 
 
 def test_api_draft_not_found():
-    response = client.post("/api/draft/src_non_existent", json={"report_type": "donor", "audience": "internal"})
+    response = client.post(
+        "/api/draft/src_non_existent",
+        json={"report_type": "donor", "audience": "internal"},
+    )
     assert response.status_code == 404
 
 
@@ -76,7 +89,12 @@ def test_api_full_workflow():
     # 1. Ingest
     response = client.post(
         "/api/ingest",
-        files={"file": ("transparency.txt", b"We served 450 families [src_dummy#c0] and gave them shelter.")}
+        files={
+            "file": (
+                "transparency.txt",
+                b"We served 450 families [src_dummy#c0] and gave them shelter.",
+            )
+        },
     )
     assert response.status_code == 200
     source_id = response.json()["source_id"]
@@ -84,7 +102,7 @@ def test_api_full_workflow():
     # 2. Draft
     response = client.post(
         f"/api/draft/{source_id}",
-        json={"report_type": "Public Audit", "audience": "internal"}
+        json={"report_type": "Public Audit", "audience": "internal"},
     )
     assert response.status_code == 200
     data = response.json()

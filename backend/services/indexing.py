@@ -15,7 +15,9 @@ def get_embedding_model():
     """
     global _model
     if _model is None:
-        _model = SentenceTransformer(config.embed_model_name, cache_folder=str(config.cache_dir))
+        _model = SentenceTransformer(
+            config.embed_model_name, cache_folder=str(config.cache_dir)
+        )
     return _model
 
 
@@ -36,37 +38,43 @@ def ingest_document(content: bytes, name: str, program_name: str) -> tuple[str, 
 
     if ext == ".csv":
         from io import StringIO
+
         df = pd.read_csv(StringIO(text_content))
-        
+
         # Performance optimization: Cap large datasets to 10000 rows to prevent CPU embedding lockup
         if len(df) > 10000:
             df = df.sample(n=10000, random_state=42)
-            
+
         # Group into markdown tables of 10 rows to improve AI context readability
         # and prevent repetitive run-on sentences.
         chunk_size = 10
         for i in range(0, len(df), chunk_size):
-            chunk_df = df.iloc[i:i+chunk_size]
-            
+            chunk_df = df.iloc[i : i + chunk_size]
+
             cols = list(chunk_df.columns)
             md_lines = ["| " + " | ".join(str(c) for c in cols) + " |"]
             md_lines.append("|" + "|".join(["---"] * len(cols)) + "|")
-            
+
             for _, row in chunk_df.iterrows():
-                md_lines.append("| " + " | ".join(str(v) if pd.notna(v) else "" for v in row) + " |")
-                
+                md_lines.append(
+                    "| " + " | ".join(str(v) if pd.notna(v) else "" for v in row) + " |"
+                )
+
             chunks.append("\n".join(md_lines))
     else:
         import textwrap
+
         raw_chunks = [c.strip() for c in text_content.split("\n\n") if c.strip()]
         if not raw_chunks:
             raw_chunks = [c.strip() for c in text_content.split("\n") if c.strip()]
-        
+
         # Enforce maximum chunk size
         max_chunk_chars = 1000
         for chunk in raw_chunks:
             if len(chunk) > max_chunk_chars:
-                wrapped = textwrap.wrap(chunk, width=max_chunk_chars, break_long_words=False)
+                wrapped = textwrap.wrap(
+                    chunk, width=max_chunk_chars, break_long_words=False
+                )
                 chunks.extend(wrapped)
             else:
                 chunks.append(chunk)
@@ -80,11 +88,17 @@ def ingest_document(content: bytes, name: str, program_name: str) -> tuple[str, 
     index_data = []
     for idx, (chunk_text, emb) in enumerate(zip(chunks, embeddings)):
         chunk_id = f"{source_id}#c{idx}"
-        index_data.append({
-            "chunk_id": chunk_id,
-            "text": chunk_text,
-            "embedding": emb.tolist() if isinstance(emb, np.ndarray) else [float(x) for x in emb]
-        })
+        index_data.append(
+            {
+                "chunk_id": chunk_id,
+                "text": chunk_text,
+                "embedding": (
+                    emb.tolist()
+                    if isinstance(emb, np.ndarray)
+                    else [float(x) for x in emb]
+                ),
+            }
+        )
 
     index_file = config.index_dir / f"{source_id}.json"
     with open(index_file, "w", encoding="utf-8") as f:

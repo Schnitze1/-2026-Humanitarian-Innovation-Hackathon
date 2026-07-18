@@ -15,7 +15,4 @@ def get_provenance_log(report_id: str) -> dict:
     with open(report_file, "r", encoding="utf-8") as f:
         report_data = json.load(f)
 
-    return {
-        "report_id": report_id,
-        "spans": report_data.get("spans", [])
-    }
+    return {"report_id": report_id, "spans": report_data.get("spans", [])}

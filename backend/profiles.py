@@ -8,7 +8,7 @@ NGO_PROFILES = {
     "environmental_conservation": "Environmental (Conservation) - Focus on local land care, wildlife rescue, rehabilitation, and marine habitat preservation.",
     "environmental_sustainability": "Environmental (Sustainability) - Focus on community renewable energy, recycling initiatives, and climate action advocacy.",
     "advocacy_human_rights": "Advocacy & Human Rights - Focus on civil liberties, gender equality, refugee support, and animal welfare.",
-    "general": "General Non-Governmental Organization - Focus on overarching humanitarian impact and community support."
+    "general": "General Non-Governmental Organization - Focus on overarching humanitarian impact and community support.",
 }
 
 DATASET_TOPICS = [
@@ -25,5 +25,5 @@ DATASET_TOPICS = [
     "Information, Communication and Technology",
     "Ocean and Maritime",
     "Population",
-    "Social and Culture"
+    "Social and Culture",
 ]
