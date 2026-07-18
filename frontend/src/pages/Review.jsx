@@ -1,13 +1,32 @@
+import { useLocation } from "react-router-dom";
+import PageHeader from "../components/layout/PageHeader";
+import WorkflowSteps from "../components/layout/WorkflowSteps";
+import Card from "../components/ui/Card";
+import StatusBadge from "../components/ui/StatusBadge";
+
 function Review() {
+  const { pathname } = useLocation();
+
   return (
-    <section className="page-placeholder">
-      <p className="eyebrow">Step 4</p>
-      <h1>Review</h1>
-      <p>
-        Placeholder for claims, provenance, and consistency flags — the core
-        review experience.
-      </p>
-    </section>
+    <>
+      <WorkflowSteps currentPath={pathname} />
+      <PageHeader
+        eyebrow="Step 4"
+        title="Review"
+        description="Placeholder for claims, provenance, and consistency flags."
+      />
+      <Card>
+        <div className="component-preview-row">
+          <StatusBadge status="verified" />
+          <StatusBadge status="warning" />
+          <StatusBadge status="review" />
+        </div>
+        <p style={{ margin: "1rem 0 0" }}>
+          Full review experience connects to provenance and consistency endpoints
+          later.
+        </p>
+      </Card>
+    </>
   );
 }
 
