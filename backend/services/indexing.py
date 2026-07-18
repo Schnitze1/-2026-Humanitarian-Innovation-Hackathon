@@ -38,13 +38,27 @@ def ingest_document(content: bytes, name: str, program_name: str) -> tuple[str, 
         from io import StringIO
         df = pd.read_csv(StringIO(text_content))
         for idx, row in df.iterrows():
-            row_str = ", ".join([f"{col}: {val}" for col, val in row.items()])
-            chunks.append(row_str)
+            valid_items = []
+            for col, val in row.items():
+                if pd.isna(val) or str(val).strip() == "":
+                    continue
+                valid_items.append(f"{col} is {val}")
+            if valid_items:
+                chunks.append("Data Record: " + ", ".join(valid_items) + ".")
     else:
+        import textwrap
         raw_chunks = [c.strip() for c in text_content.split("\n\n") if c.strip()]
         if not raw_chunks:
             raw_chunks = [c.strip() for c in text_content.split("\n") if c.strip()]
-        chunks = raw_chunks
+        
+        # Enforce maximum chunk size
+        max_chunk_chars = 1000
+        for chunk in raw_chunks:
+            if len(chunk) > max_chunk_chars:
+                wrapped = textwrap.wrap(chunk, width=max_chunk_chars, break_long_words=False)
+                chunks.extend(wrapped)
+            else:
+                chunks.append(chunk)
 
     if not chunks:
         raise ValueError("No text chunks found in document")

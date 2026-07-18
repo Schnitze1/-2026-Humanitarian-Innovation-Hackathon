@@ -4,6 +4,7 @@ import json
 import uuid
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import config
+from services.indexing import search_similar_chunks
 
 citation_regex = re.compile(r'\[(src_[a-fA-F0-9]+#c\d+)\]')
 _tokenizer = None
@@ -80,27 +81,53 @@ def generate_report(source_id: str, report_type: str, audience: str) -> dict:
 
     tokenizer, model = get_offline_llm()
     raw_content = ""
+    
+    # RAG Retrieval: semantic search based on report needs
+    query = f"Key details and metrics for {report_type} report aimed at {audience} audience"
+    try:
+        top_chunks = search_similar_chunks(query, source_id, top_k=5)
+        if not top_chunks:
+            top_chunks = chunks[:5]
+    except Exception:
+        top_chunks = chunks[:5]
+
     if model is not None and tokenizer is not None:
         try:
-            context = "\n".join([f"[{c['chunk_id']}] {c['text']}" for c in chunks[:3]])
-            prompt = (
-                f"Context:\n{context}\n\n"
-                f"Write a {report_type} report for {audience} based on the context. "
-                f"For each statement, append the source chunk ID in brackets like [src_id#c0].\n"
-            )
+            context = "\n".join([f"[{c['chunk_id']}] {c['text']}" for c in top_chunks])
+            messages = [
+                {"role": "system", "content": (
+                    "You are a professional AI reporting assistant for NGOs. "
+                    "You synthesize dense data into a coherent, natural language paragraph. "
+                    "You NEVER output bullet points or raw lists. You ALWAYS write in full sentences.\n\n"
+                    "EXAMPLE INPUT CONTEXT:\n"
+                    "[src_123#c1] Data Record: COMMODITY is Food, OBS_VALUE is 90.5.\n"
+                    "EXAMPLE OUTPUT:\n"
+                    "The data indicates that the observed value for food commodities reached 90.5 [src_123#c1]. This demonstrates a key metric for the region."
+                )},
+                {"role": "user", "content": (
+                    f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n\n"
+                    f"RULES:\n"
+                    f"1. Write a fluent paragraph. NO LISTS. NO BULLET POINTS. Do not just copy the data fields.\n"
+                    f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n\n"
+                    f"CONTEXT:\n{context}\n\n"
+                    f"REPORT:"
+                )}
+            ]
+            prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             inputs = tokenizer(prompt, return_tensors="pt")
-            outputs = model.generate(**inputs, max_new_tokens=150)
-            raw_content = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            outputs = model.generate(**inputs, max_new_tokens=400, temperature=0.7, do_sample=True, repetition_penalty=1.1)
+            raw_content = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
         except Exception:
             pass
 
     if not raw_content:
+        # Offline dummy fallback
         sentences = []
-        for idx, c in enumerate(chunks[:3]):
+        for c in top_chunks:
             text = c['text']
             if text.endswith('.'):
                 text = text[:-1]
-            sentences.append(f"{text} [{source_id}#c{idx}].")
+            sentences.append(f"{text} [{c['chunk_id']}].")
         raw_content = " ".join(sentences)
     cleaned_text, spans = parse_citations(raw_content)
     report_id = f"rep_{uuid.uuid4().hex[:8]}"

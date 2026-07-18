@@ -12,7 +12,7 @@ for directory in [reports_dir, provenance_dir, index_dir]:
     directory.mkdir(parents=True, exist_ok=True)
 
 embed_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-offline_llm_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+offline_llm_name = "Qwen/Qwen2.5-0.5B-Instruct"
 
 cache_dir = base_dir / ".cache"
 cache_dir.mkdir(parents=True, exist_ok=True)
