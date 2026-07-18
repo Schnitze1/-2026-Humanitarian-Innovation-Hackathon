@@ -1,0 +1,131 @@
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.welcome-hero {
+  padding: var(--space-xl) 0 var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.welcome-hero__brand {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 700;
+  color: var(--color-navy);
+  margin: 0 0 var(--space-md);
+  letter-spacing: -0.02em;
+}
+
+.welcome-hero__lede {
+  max-width: 36rem;
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: var(--color-navy-muted);
+  margin: 0 0 var(--space-lg);
+}
+
+.welcome-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.welcome-section__title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  margin: 0 0 var(--space-sm);
+}
+
+.welcome-section__intro {
+  margin: 0 0 var(--space-lg);
+  max-width: 36rem;
+}
+
+.welcome-stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 720px) {
+  .welcome-stages {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl) var(--space-lg);
+  }
+}
+
+.welcome-stages__item {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.welcome-stages__number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-navy);
+  color: var(--color-text-inverse);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.welcome-stages__title {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-xs);
+  color: var(--color-navy);
+}
+
+.welcome-stages__body {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.welcome-recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.welcome-recent__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.welcome-recent__item:last-child {
+  border-bottom: none;
+}
+
+.welcome-recent__name {
+  margin: 0 0 0.15rem;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.welcome-recent__meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
