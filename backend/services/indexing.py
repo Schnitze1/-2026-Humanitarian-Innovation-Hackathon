@@ -37,14 +37,25 @@ def ingest_document(content: bytes, name: str, program_name: str) -> tuple[str, 
     if ext == ".csv":
         from io import StringIO
         df = pd.read_csv(StringIO(text_content))
-        for idx, row in df.iterrows():
-            valid_items = []
-            for col, val in row.items():
-                if pd.isna(val) or str(val).strip() == "":
-                    continue
-                valid_items.append(f"{col} is {val}")
-            if valid_items:
-                chunks.append("Data Record: " + ", ".join(valid_items) + ".")
+        
+        # Performance optimization: Cap large datasets to 10000 rows to prevent CPU embedding lockup
+        if len(df) > 10000:
+            df = df.sample(n=10000, random_state=42)
+            
+        # Group into markdown tables of 10 rows to improve AI context readability
+        # and prevent repetitive run-on sentences.
+        chunk_size = 10
+        for i in range(0, len(df), chunk_size):
+            chunk_df = df.iloc[i:i+chunk_size]
+            
+            cols = list(chunk_df.columns)
+            md_lines = ["| " + " | ".join(str(c) for c in cols) + " |"]
+            md_lines.append("|" + "|".join(["---"] * len(cols)) + "|")
+            
+            for _, row in chunk_df.iterrows():
+                md_lines.append("| " + " | ".join(str(v) if pd.notna(v) else "" for v in row) + " |")
+                
+            chunks.append("\n".join(md_lines))
     else:
         import textwrap
         raw_chunks = [c.strip() for c in text_content.split("\n\n") if c.strip()]

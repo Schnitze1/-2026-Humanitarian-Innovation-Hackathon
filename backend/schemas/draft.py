@@ -5,6 +5,7 @@ from typing import List
 class DraftRequest(BaseModel):
     report_type: str
     audience: str
+    primary_profile: str = None
 
 
 class Span(BaseModel):

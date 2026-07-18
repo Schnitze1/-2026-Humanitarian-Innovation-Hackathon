@@ -62,11 +62,13 @@ def parse_citations(text: str) -> tuple[str, list[dict]]:
     return cleaned_text, spans
 
 
-def generate_report(source_id: str, report_type: str, audience: str) -> dict:
+def generate_report(source_id: str, report_type: str, audience: str, ngo_profile: str = "general", dataset_topic: str = "General Context") -> dict:
     """
     :param source_id: Source ID of the ingested reference document.
     :param report_type: Type of report to generate (e.g., public, donor, internal).
     :param audience: Target audience for the generated output.
+    :param ngo_profile: The profile of the NGO (e.g. service_welfare_health).
+    :param dataset_topic: The topic of the dataset being analyzed.
     :return: A dict containing report_id, content, and spans list.
     """
     index_file = config.index_dir / f"{source_id}.json"
@@ -82,8 +84,15 @@ def generate_report(source_id: str, report_type: str, audience: str) -> dict:
     tokenizer, model = get_offline_llm()
     raw_content = ""
     
-    # RAG Retrieval: semantic search based on report needs
-    query = f"Key details and metrics for {report_type} report aimed at {audience} audience"
+    # Resolve NGO instruction
+    try:
+        import profiles
+        ngo_instruction = profiles.NGO_PROFILES.get(ngo_profile, profiles.NGO_PROFILES["general"])
+    except Exception:
+        ngo_instruction = "General Non-Governmental Organization - Focus on overarching humanitarian impact."
+
+    # RAG Retrieval: semantic search based on report needs and dataset topic
+    query = f"Key details and metrics regarding {dataset_topic} for {report_type} report aimed at {audience} audience"
     try:
         top_chunks = search_similar_chunks(query, source_id, top_k=5)
         if not top_chunks:
@@ -97,6 +106,8 @@ def generate_report(source_id: str, report_type: str, audience: str) -> dict:
             messages = [
                 {"role": "system", "content": (
                     "You are a professional AI reporting assistant for NGOs. "
+                    f"Your client profile: {ngo_instruction}\n"
+                    f"You must interpret the provided data through the lens of this NGO profile, highlighting relevant insights where possible.\n"
                     "You synthesize dense data into a coherent, natural language paragraph. "
                     "You NEVER output bullet points or raw lists. You ALWAYS write in full sentences.\n\n"
                     "EXAMPLE INPUT CONTEXT:\n"
@@ -105,10 +116,14 @@ def generate_report(source_id: str, report_type: str, audience: str) -> dict:
                     "The data indicates that the observed value for food commodities reached 90.5 [src_123#c1]. This demonstrates a key metric for the region."
                 )},
                 {"role": "user", "content": (
-                    f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n\n"
+                    f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n"
+                    f"Connect the data to our NGO profile's perspective and the topic of '{dataset_topic}'. If the connection is abstract, simply summarize the data accurately.\n"
+                    f"Focus ONLY on factual accuracy and original synthesis to maintain trust with our donors.\n\n"
                     f"RULES:\n"
                     f"1. Write a fluent paragraph. NO LISTS. NO BULLET POINTS. Do not just copy the data fields.\n"
-                    f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n\n"
+                    f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n"
+                    f"3. Maintain rigorous factual accuracy and original phrasing.\n"
+                    f"4. NEVER refuse to write the report. You must always provide a summary of the data.\n\n"
                     f"CONTEXT:\n{context}\n\n"
                     f"REPORT:"
                 )}
