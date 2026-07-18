@@ -1,0 +1,206 @@
+.review-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.review-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.review-counts strong {
+  color: var(--color-navy);
+}
+
+.review-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.review-filters__btn {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-navy-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.review-filters__btn.is-active {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+  background: var(--color-surface-muted);
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .review-layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+  }
+}
+
+.claim-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+  max-height: 36rem;
+  overflow: auto;
+}
+
+.claim-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font: inherit;
+  box-shadow: var(--shadow-sm);
+}
+
+.claim-card:hover,
+.claim-card:focus-visible {
+  border-color: var(--color-navy-muted);
+  outline: none;
+}
+
+.claim-card.is-selected {
+  border-color: var(--color-navy);
+  box-shadow: var(--shadow-md);
+}
+
+.claim-card--verified {
+  border-left: 3px solid var(--color-verified);
+}
+
+.claim-card--warning {
+  border-left: 3px solid var(--color-warning);
+}
+
+.claim-card--review {
+  border-left: 3px solid var(--color-review);
+}
+
+.claim-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.claim-card__id {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-coral);
+}
+
+.claim-card__text {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.claim-card__issue {
+  margin: var(--space-sm) 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.provenance-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  padding: var(--space-lg);
+  position: sticky;
+  top: var(--space-md);
+}
+
+.provenance-panel--empty {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.provenance-panel__title {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  margin: 0 0 var(--space-md);
+}
+
+.provenance-panel__dl {
+  margin: 0;
+}
+
+.provenance-panel__dl > div {
+  margin-bottom: var(--space-md);
+}
+
+.provenance-panel__dl dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-navy-muted);
+  margin-bottom: 0.2rem;
+}
+
+.provenance-panel__dl dd {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.provenance-panel__flag {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.provenance-panel__flag h3 {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  margin: 0 0 var(--space-md);
+}
+
+.provenance-panel__ok {
+  margin: var(--space-lg) 0 0;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-verified);
+  font-size: 0.9rem;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
