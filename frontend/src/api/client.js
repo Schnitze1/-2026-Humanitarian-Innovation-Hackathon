@@ -75,6 +75,11 @@ export function createClient({ name, ngoProfiles, datasetTopics }) {
   });
 }
 
+/** GET /api/clients — list all clients (requires Postgres) */
+export function listClients() {
+  return request("/api/clients");
+}
+
 /** GET /api/clients/{client_id} */
 export function getClient(clientId) {
   return request(`/api/clients/${encodeURIComponent(clientId)}`);
