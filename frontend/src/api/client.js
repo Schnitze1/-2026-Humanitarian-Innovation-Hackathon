@@ -27,7 +27,6 @@ async function parseError(response) {
       details = body.errors;
     }
   } catch {
-    // Non-JSON error body — keep status message
   }
 
   return new ApiError(message, { status: response.status, details });

@@ -6,6 +6,15 @@ Help resource-constrained NGOs adopt AI for report drafting without sacrificing 
 
 ---
 
+## Live Demo
+https://2026-humanitarian-innovation-hac-git-adb2c6-schnitze1s-projects.vercel.app
+
+![Aiga Homepage - South Pacific Image Gallery](frontend/public/assets/homepage_demo.png)
+![Semantic Accuracy Scoring Review UI](frontend/public/assets/accuracy_scoring_demo.png)
+![Native PDF Disclosure Export](frontend/public/assets/Disclosure_Export_demo.png)
+
+---
+
 ## Features
  
 - **Source-Grounded Drafting**: Retrieval-augmented generation (RAG) restricts the model to ingested source material only.
