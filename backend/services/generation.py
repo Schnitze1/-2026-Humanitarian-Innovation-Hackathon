@@ -94,11 +94,11 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
     # RAG Retrieval: semantic search based on report needs and dataset topic
     query = f"Key details and metrics regarding {dataset_topic} for {report_type} report aimed at {audience} audience"
     try:
-        top_chunks = search_similar_chunks(query, source_id, top_k=5)
+        top_chunks = search_similar_chunks(query, source_id, top_k=2)
         if not top_chunks:
-            top_chunks = chunks[:5]
+            top_chunks = chunks[:2]
     except Exception:
-        top_chunks = chunks[:5]
+        top_chunks = chunks[:2]
 
     if model is not None and tokenizer is not None:
         try:
