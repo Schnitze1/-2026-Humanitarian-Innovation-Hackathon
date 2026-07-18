@@ -3,15 +3,13 @@ import json
 from sqlalchemy import Column, String, ForeignKey, Text
 from database import Base
 
+
 class Client(Base):
     __tablename__ = "clients"
-    
+
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, unique=True)
-    
-    # Store profiles and topics as JSON strings for simplicity in SQLite/Postgres compatibility
-    # In a full Postgres setup, we could use JSONB.
-    ngo_profiles = Column(Text, nullable=False, default="[]") 
+    ngo_profiles = Column(Text, nullable=False, default="[]")
     dataset_topics = Column(Text, nullable=False, default="[]")
 
     def get_profiles(self):
@@ -20,9 +18,10 @@ class Client(Base):
     def get_topics(self):
         return json.loads(self.dataset_topics)
 
+
 class Dataset(Base):
     __tablename__ = "datasets"
-    
+
     source_id = Column(String, primary_key=True)
     client_id = Column(String, ForeignKey("clients.id"), nullable=False)
     dataset_topic = Column(String, nullable=False)

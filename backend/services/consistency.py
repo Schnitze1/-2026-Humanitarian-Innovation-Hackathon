@@ -5,10 +5,12 @@ import numpy as np
 import config
 from services.indexing import get_embedding_model
 
-numeric_regex = re.compile(r'\b\d+(?:,\d+)*(?:\.\d+)?\b')
+numeric_regex = re.compile(r"\b\d+(?:,\d+)*(?:\.\d+)?\b")
 
 
-def check_numeric_consistency(span_text: str, chunk_text: str) -> tuple[bool, str | None, str | None]:
+def check_numeric_consistency(
+    span_text: str, chunk_text: str
+) -> tuple[bool, str | None, str | None]:
     """
     :param span_text: Generated sentence text span.
     :param chunk_text: Reference source document chunk.
@@ -22,7 +24,11 @@ def check_numeric_consistency(span_text: str, chunk_text: str) -> tuple[bool, st
                 large_source_nums = [sn for sn in source_nums if float(sn) > 31]
             except ValueError:
                 large_source_nums = []
-            source_val = large_source_nums[0] if large_source_nums else (source_nums[0] if source_nums else None)
+            source_val = (
+                large_source_nums[0]
+                if large_source_nums
+                else (source_nums[0] if source_nums else None)
+            )
             return False, cn, source_val
     return True, None, None
 
@@ -84,28 +90,30 @@ def run_consistency_check(report_id: str) -> dict:
             continue
 
         # numeric verification
-        is_num_consistent, claim_val, source_val = check_numeric_consistency(span["text"], chunk_text)
+        is_num_consistent, claim_val, source_val = check_numeric_consistency(
+            span["text"], chunk_text
+        )
         if not is_num_consistent:
-            flags.append({
-                "span_id": span["span_id"],
-                "issue": "numeric_mismatch",
-                "claim": span["text"],
-                "source_value": source_val
-            })
+            flags.append(
+                {
+                    "span_id": span["span_id"],
+                    "issue": "numeric_mismatch",
+                    "claim": span["text"],
+                    "source_value": source_val,
+                }
+            )
             continue
 
         # semantic verification
         is_sem_consistent = check_semantic_consistency(span["text"], chunk_text)
         if not is_sem_consistent:
-            flags.append({
-                "span_id": span["span_id"],
-                "issue": "unsupported_claim",
-                "claim": span["text"],
-                "source_value": None
-            })
+            flags.append(
+                {
+                    "span_id": span["span_id"],
+                    "issue": "unsupported_claim",
+                    "claim": span["text"],
+                    "source_value": None,
+                }
+            )
 
-    return {
-        "report_id": report_id,
-        "consistent": len(flags) == 0,
-        "flags": flags
-    }
+    return {"report_id": report_id, "consistent": len(flags) == 0, "flags": flags}

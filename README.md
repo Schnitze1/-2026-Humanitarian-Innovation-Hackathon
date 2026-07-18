@@ -21,13 +21,24 @@ Help resource-constrained NGOs adopt AI for report drafting without sacrificing 
 ### Backend
 
 ```bash
+# 1. Start the PostgreSQL Database (requires Docker)
+docker-compose up -d
+
+# 2. Setup the Python environment
 cd backend
+
+# On Windows:
 python -m venv .venv
 .\.venv\Scripts\activate
+
+# On Mac/Linux:
+python3 -m venv .venv
+source .venv/bin/activate
+
 pip install -r requirements.txt
 
-# Start API server
-python serve.py
+# 3. Start API server
+python serve.py  # or python3 serve.py
 ```
 
 - Backend Swagger UI: `http://127.0.0.1:8000/docs`
@@ -35,10 +46,10 @@ python serve.py
 **Optional: seed local vector store & offline model cache**
 ```bash
 # (Optional) Chunk + embed sample source documents for RAG retrieval
-python data_pipeline/build_index.py
+python data_pipeline/build_index.py  # or python3
 
 # (Optional) Download and cache the quantized offline fallback model
-python scripts/fetch_offline_model.py
+python scripts/fetch_offline_model.py  # or python3
 ```
 
 ### Frontend
@@ -70,6 +81,7 @@ pytest -v
 ## Requirements
  
 - Python 3.10+
+- Docker (for PostgreSQL database)
 - Node.js 18+ (frontend)
 - fastapi
 - uvicorn
@@ -93,11 +105,13 @@ See `backend/requirements.txt` for pinned versions.
 | # | Method | Endpoint | Description |
 |---|--------|----------|-------------|
 | 1 | `GET` | `/health` | Health check endpoint |
-| 2 | `POST` | `/api/ingest` | Upload source material (field notes, survey CSV, raw text) for a report |
-| 3 | `POST` | `/api/draft/{source_id}` | Generate a draft report from ingested source material |
-| 4 | `GET` | `/api/provenance/{report_id}` | Retrieve source-mapping for every claim in a draft |
-| 5 | `POST` | `/api/consistency-check/{report_id}` | Run the source-consistency check and return flagged claims |
-| 6 | `GET` | `/api/disclosure/{report_id}` | Return the rendered donor and community disclosure versions |
+| 2 | `GET` | `/api/clients` | List all registered NGO client profiles |
+| 3 | `POST` | `/api/clients` | Create a new NGO client profile |
+| 4 | `POST` | `/api/ingest` | Upload source material (field notes, survey CSV, raw text) for a report |
+| 5 | `POST` | `/api/draft/{source_id}` | Generate a draft report from ingested source material |
+| 6 | `GET` | `/api/provenance/{report_id}` | Retrieve source-mapping for every claim in a draft |
+| 7 | `POST` | `/api/consistency-check/{report_id}` | Run the source-consistency check and return flagged claims |
+| 8 | `GET` | `/api/disclosure/{report_id}` | Return the rendered donor and community disclosure versions |
 
 ### 1. `GET /health`
 **Response (200 OK):**
@@ -232,7 +246,9 @@ graph TB
 **Components:**
 - **Frontend (React Native / React, `frontend/`)** — upload source material, review flagged claims, preview donor and community disclosure views. Talks to the backend via REST.
 - **Backend (Python/FastAPI, `backend/`)** — ingestion, retrieval-augmented drafting, provenance tracking, consistency checking, disclosure rendering.
+- **Database (PostgreSQL Docker)** — securely stores NGO client profiles, topics, and dataset linkage. Credentials are decoupled via `.env` Secrets Management.
 - **Generation layer** — hosted LLM API for online use; quantized local model as an automatic offline fallback for low-connectivity field settings.
+- **Data Pipeline** — converts tabular SDMX/CSV data into structured Markdown Tables (max 10,000 rows per batch) for optimal LLM context retention without crashing or hallucinating.
 - **Provenance service** — metadata pipeline, not a model. Every generated span is mapped to the retrieved source chunk that produced it.
 - **Consistency service** — narrow, rules-based/small-classifier checks against tagged source data. Deliberately not a second LLM checking the first.
 - **Storage** — local-first; reports and provenance logs sync to donor/cloud storage only at export time.
@@ -343,6 +359,17 @@ This mirrors standard classifier evaluation practice — the consistency checker
 - File type restricted to supported formats (`.txt`, `.csv`, `.md`)
 - Consistency check runs automatically before a report can be marked ready for disclosure
 - Clear error messages with appropriate HTTP status codes (422, 404, 400, 500)
+
+---
+
+## CI/CD Pipeline (DagsHub & DVC)
+
+The project utilizes a robust automated MLOps pipeline configured via GitHub Actions (`.github/workflows/retrain.yml`).
+
+1. **Trigger:** The workflow automatically runs whenever new raw data is pushed to `backend/storage/raw_sources/` or DVC configuration files change.
+2. **Data Pull:** It connects to DagsHub using GitHub Secrets to authenticate via WebDAV and pull the latest dataset versions.
+3. **Re-Indexing:** It runs `dvc repro rebuild_index`, triggering the backend pipeline to chunk and embed all the newly uploaded data into the local vector store.
+4. **Auto-Commit:** The rebuilt indexes are pushed back to DagsHub, and a GitHub Bot automatically commits the updated `dvc.lock` tracking file directly into the repository.
 
 ---
 
