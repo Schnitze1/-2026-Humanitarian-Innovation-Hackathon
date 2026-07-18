@@ -50,18 +50,18 @@ export const AUDIENCES = [
 ];
 
 export const TOPIC_IMAGES = {
-  "Agriculture and Forestry": "https://loremflickr.com/800/600/fiji,agriculture/all",
-  "Climate Change, Disasters and Risks": "https://loremflickr.com/800/600/samoa,climate/all",
-  "Economy": "https://loremflickr.com/800/600/vanuatu,economy/all",
-  "Education": "https://loremflickr.com/800/600/tonga,education/all",
-  "Energy": "https://loremflickr.com/800/600/pacific,energy/all",
-  "Environment": "https://loremflickr.com/800/600/fiji,environment/all",
-  "Fisheries and Aquaculture": "https://loremflickr.com/800/600/samoa,fishing/all",
-  "Food": "https://loremflickr.com/800/600/vanuatu,food/all",
-  "Gender": "https://loremflickr.com/800/600/tonga,women/all",
-  "Health": "https://loremflickr.com/800/600/pacific,health/all",
-  "Information, Communication and Technology": "https://loremflickr.com/800/600/fiji,technology/all",
-  "Ocean and Maritime": "https://loremflickr.com/800/600/samoa,ocean/all",
-  "Population": "https://loremflickr.com/800/600/vanuatu,people/all",
-  "Social and Culture": "https://loremflickr.com/800/600/tonga,culture/all"
+  "Agriculture and Forestry": "https://upload.wikimedia.org/wikipedia/commons/d/d5/A_farmer_in_Fiji%2C_May_2012._Photo-_DFAT_%2812422885383%29.jpg",
+  "Climate Change, Disasters and Risks": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Samoa_%2822452286782%29.jpg",
+  "Economy": "https://upload.wikimedia.org/wikipedia/commons/5/51/Vanuatu_Skills_Partnership_%2832717906618%29.jpg",
+  "Education": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Students_with_a_disability_take_part_in_The_Inclusive_Education_%28TIE%29_pilot_program_at_Ngele%27ia_Primary_School_in_Nuku%27alofa%2C_Tonga._%2810727442704%29.jpg",
+  "Energy": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Samoa_%2822452286782%29.jpg",
+  "Environment": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Samoa_%2822452286782%29.jpg",
+  "Fisheries and Aquaculture": "https://upload.wikimedia.org/wikipedia/commons/e/e3/U_S_Coast_Guard%2C_Samoa_Ministry_of_Agriculture_and_Fisheries_conduct_bilateral_operations_offshore_Samoa_%289518594%29.jpg",
+  "Food": "https://upload.wikimedia.org/wikipedia/commons/7/75/Yams_at_Market_Port_Vila_%284273975974%29.jpg",
+  "Gender": "https://upload.wikimedia.org/wikipedia/commons/5/51/Vanuatu_Skills_Partnership_%2832717906618%29.jpg",
+  "Health": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Pacific_Partnership_24-1-_Community_Health_Clinic_Eye_Exam_%288138531%29.jpg",
+  "Information, Communication and Technology": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Students_with_a_disability_take_part_in_The_Inclusive_Education_%28TIE%29_pilot_program_at_Ngele%27ia_Primary_School_in_Nuku%27alofa%2C_Tonga._%2810727442704%29.jpg",
+  "Ocean and Maritime": "https://upload.wikimedia.org/wikipedia/commons/e/e3/U_S_Coast_Guard%2C_Samoa_Ministry_of_Agriculture_and_Fisheries_conduct_bilateral_operations_offshore_Samoa_%289518594%29.jpg",
+  "Population": "https://upload.wikimedia.org/wikipedia/commons/7/75/Yams_at_Market_Port_Vila_%284273975974%29.jpg",
+  "Social and Culture": "https://upload.wikimedia.org/wikipedia/commons/d/d5/A_farmer_in_Fiji%2C_May_2012._Photo-_DFAT_%2812422885383%29.jpg"
 };
