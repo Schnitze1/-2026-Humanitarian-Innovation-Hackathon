@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 import json
 
-# Add backend directory to python path if not present.
 base_dir = Path(__file__).resolve().parent
 if str(base_dir) not in sys.path:
     sys.path.append(str(base_dir))
@@ -34,7 +33,6 @@ app = FastAPI(title="Aiga API", version="1.0.0")
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-# Configure allowed origins for CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -160,7 +158,7 @@ def draft_report(source_id: str, payload: DraftRequest, db: Session = Depends(ge
     :return: DraftResponse containing the drafted report content and spans.
     """
     try:
-        # Fetch Dataset details securely from DB
+        # Fetch Dataset details from DB
         dataset = db.query(Dataset).filter(Dataset.source_id == source_id).first()
         topic = dataset.dataset_topic if dataset else "General Context"
         

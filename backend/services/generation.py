@@ -84,14 +84,12 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
     tokenizer, model = get_offline_llm()
     raw_content = ""
     
-    # Resolve NGO instruction
     try:
         import profiles
         ngo_instruction = profiles.NGO_PROFILES.get(ngo_profile, profiles.NGO_PROFILES["general"])
     except Exception:
         ngo_instruction = "General Non-Governmental Organization - Focus on overarching humanitarian impact."
 
-    # RAG Retrieval: semantic search based on report needs and dataset topic
     query = f"Key details and metrics regarding {dataset_topic} for {report_type} report aimed at {audience} audience"
     try:
         top_chunks = search_similar_chunks(query, source_id, top_k=2)
@@ -136,7 +134,7 @@ def generate_report(source_id: str, report_type: str, audience: str, ngo_profile
             pass
 
     if not raw_content:
-        # Offline dummy fallback
+        # Offline dummy fallback (Testing)
         sentences = []
         for c in top_chunks:
             text = c['text']
