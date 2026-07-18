@@ -9,6 +9,7 @@ class Client(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, unique=True)
+    custom_guidelines = Column(Text, nullable=True)
     ngo_profiles = Column(Text, nullable=False, default="[]")
     dataset_topics = Column(Text, nullable=False, default="[]")
 

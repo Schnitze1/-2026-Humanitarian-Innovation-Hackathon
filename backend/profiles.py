@@ -1,5 +1,9 @@
 NGO_PROFILES = {
-    "service_welfare_health": "Service & Welfare (Health & Disability) - Focus on clinical outcomes, patient care, mental health support, and specialized therapies.",
+    "health_large_international": "Health (Large International) - Focus on national health infrastructure, mass vaccination programs, epidemiological trends, and global funding allocation.",
+    "health_medium_regional": "Health (Medium Regional) - Focus on building community clinics, regional disease prevention, and establishing maternal health programs across districts.",
+    "health_small_niche_disability": "Health (Small Niche - Disability) - Focus on highly localized, specialized mobility therapies, wheelchair accessibility advocacy, and individual patient care.",
+    "health_small_niche_mental": "Health (Small Niche - Mental Health) - Focus on local community counseling, trauma support groups, and suicide prevention initiatives.",
+    "health_small_niche_nutrition": "Health (Small Niche - Nutrition) - Focus on school feeding programs, infant malnourishment interventions, and local food fortification.",
     "service_welfare_social": "Service & Welfare (Social Services) - Focus on crisis intervention, emergency housing, food security, and aged care.",
     "community_arts": "Community & Grassroots (Arts & Cultural) - Focus on community engagement, local heritage, theater, and Indigenous cultural preservation.",
     "community_sports": "Community & Grassroots (Recreation & Sports) - Focus on youth sports, community wellness, and social inclusion.",

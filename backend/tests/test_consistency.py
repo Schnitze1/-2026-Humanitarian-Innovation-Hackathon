@@ -10,7 +10,6 @@ from services.consistency import (
 
 class MockEmbeddingModel:
     def encode(self, texts):
-        # Deterministic representation for mock semantic similarity checks
         if texts[0] == "Satisfied statement" and texts[1] == "Satisfied statement":
             return [[1.0, 0.0], [1.0, 0.0]]
         if "satisfaction" in texts[0].lower() and "satisfaction" in texts[1].lower():
@@ -50,7 +49,6 @@ def test_semantic_consistency_high_similarity(mock_embed):
 
 @patch("services.consistency.get_embedding_model", return_value=MockEmbeddingModel())
 def test_run_consistency_check(mock_embed):
-    # Setup mock index chunk.
     source_id = "src_019"
     index_data = [
         {
@@ -62,7 +60,6 @@ def test_run_consistency_check(mock_embed):
     with open(config.index_dir / f"{source_id}.json", "w", encoding="utf-8") as f:
         json.dump(index_data, f)
 
-    # Setup report matching index.
     report_id = "rep_consistency_test"
     report_data = {
         "report_id": report_id,
@@ -78,7 +75,6 @@ def test_run_consistency_check(mock_embed):
     with open(config.reports_dir / f"{report_id}.json", "w", encoding="utf-8") as f:
         json.dump(report_data, f)
 
-    # Run check.
     result = run_consistency_check(report_id)
 
     assert result["consistent"] is False

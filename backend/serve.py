@@ -87,6 +87,7 @@ def health():
 def create_client(client: ClientCreate, db: Session = Depends(get_db)):
     db_client = Client(
         name=client.name,
+        custom_guidelines=client.custom_guidelines,
         ngo_profiles=json.dumps(client.ngo_profiles),
         dataset_topics=json.dumps(client.dataset_topics),
     )
@@ -96,6 +97,7 @@ def create_client(client: ClientCreate, db: Session = Depends(get_db)):
     return ClientResponse(
         id=db_client.id,
         name=db_client.name,
+        custom_guidelines=db_client.custom_guidelines,
         ngo_profiles=db_client.get_profiles(),
         dataset_topics=db_client.get_topics(),
     )
@@ -108,6 +110,7 @@ def get_all_clients(db: Session = Depends(get_db)):
         ClientResponse(
             id=c.id,
             name=c.name,
+            custom_guidelines=c.custom_guidelines,
             ngo_profiles=c.get_profiles(),
             dataset_topics=c.get_topics(),
         )
@@ -183,9 +186,11 @@ def draft_report(source_id: str, payload: DraftRequest, db: Session = Depends(ge
         topic = dataset.dataset_topic if dataset else "General Context"
 
         ngo_profile_target = "general"
+        custom_guidelines = None
         if dataset:
             client = db.query(Client).filter(Client.id == dataset.client_id).first()
             if client:
+                custom_guidelines = client.custom_guidelines
                 profiles = client.get_profiles()
                 if payload.primary_profile and payload.primary_profile in profiles:
                     ngo_profile_target = payload.primary_profile
@@ -198,6 +203,7 @@ def draft_report(source_id: str, payload: DraftRequest, db: Session = Depends(ge
             payload.audience,
             ngo_profile=ngo_profile_target,
             dataset_topic=topic,
+            custom_guidelines=custom_guidelines,
         )
         return DraftResponse(**report_data)
     except FileNotFoundError:

@@ -74,6 +74,7 @@ def generate_report(
     audience: str,
     ngo_profile: str = "general",
     dataset_topic: str = "General Context",
+    custom_guidelines: str | None = None,
 ) -> dict:
     """
     :param source_id: Source ID of the ingested reference document.
@@ -120,28 +121,30 @@ def generate_report(
                 {
                     "role": "system",
                     "content": (
-                        "You are a professional AI reporting assistant for NGOs. "
-                        f"Your client profile: {ngo_instruction}\n"
-                        f"You must interpret the provided data through the lens of this NGO profile, highlighting relevant insights where possible.\n"
+                        "You are a professional AI reporting assistant writing ON BEHALF of the following NGO: {ngo_instruction}\n"
+                        "CRITICAL INSTRUCTION: Do NOT describe the NGO or explain what the NGO does. They already know who they are.\n"
+                        "Your job is to summarize the provided data clearly and simply for a non-technical audience, finding actionable insights that align with the NGO's mission.\n"
+                        + (f"\nIMPORTANT CUSTOM GUIDELINES:\n{custom_guidelines}\n\n" if custom_guidelines else "") +
                         "You synthesize dense data into a coherent, natural language paragraph. "
                         "You NEVER output bullet points or raw lists. You ALWAYS write in full sentences.\n\n"
                         "EXAMPLE INPUT CONTEXT:\n"
                         "[src_123#c1] Data Record: COMMODITY is Food, OBS_VALUE is 90.5.\n"
                         "EXAMPLE OUTPUT:\n"
-                        "The data indicates that the observed value for food commodities reached 90.5 [src_123#c1]. This demonstrates a key metric for the region."
+                        "The recent data highlights a significant trend, with food commodities reaching an observed value of 90.5 [src_123#c1]."
                     ),
                 },
                 {
                     "role": "user",
                     "content": (
-                        f"Write a 1-paragraph {report_type} report tailored for a {audience} audience based on the data below.\n"
-                        f"Connect the data to our NGO profile's perspective and the topic of '{dataset_topic}'. If the connection is abstract, simply summarize the data accurately.\n"
-                        f"Focus ONLY on factual accuracy and original synthesis to maintain trust with our donors.\n\n"
+                        f"Write a simple, 1-paragraph {report_type} report tailored for a non-technical {audience} audience based on the data below.\n"
+                        f"Highlight the most important trends and facts from the data in a clear, easy-to-understand way that is relevant to '{dataset_topic}'.\n"
+                        f"DO NOT write about the organization itself. Focus ONLY on explaining the external dataset accurately.\n\n"
                         f"RULES:\n"
-                        f"1. Write a fluent paragraph. NO LISTS. NO BULLET POINTS. Do not just copy the data fields.\n"
-                        f"2. Every single fact or number must end with its exact source ID in brackets, e.g. [src_abc#c5].\n"
-                        f"3. Maintain rigorous factual accuracy and original phrasing.\n"
-                        f"4. NEVER refuse to write the report. You must always provide a summary of the data.\n\n"
+                        f"1. You MUST include specific numbers, percentages, or data points from the context. Do NOT write a generic summary.\n"
+                        f"2. MANDATORY: Every single sentence or factual claim MUST end with its exact source ID in brackets, matching the context exactly (e.g. [src_abc#c5]).\n"
+                        f"3. FAILURE TO INCLUDE BRACKETS [src_...] IS A CRITICAL ERROR. If you write a fact, you MUST cite it.\n"
+                        f"4. Write a fluent paragraph. NO LISTS. NO BULLET POINTS.\n"
+                        f"5. Maintain rigorous factual accuracy and original phrasing.\n\n"
                         f"CONTEXT:\n{context}\n\n"
                         f"REPORT:"
                     ),

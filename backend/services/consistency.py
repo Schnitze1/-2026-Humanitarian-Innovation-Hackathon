@@ -66,7 +66,6 @@ def run_consistency_check(report_id: str) -> dict:
 
     flags = []
     spans = report_data.get("spans", [])
-
     for span in spans:
         source_chunk_id = span["source_chunk"]
         if "#" not in source_chunk_id:

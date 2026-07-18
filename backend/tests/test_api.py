@@ -25,8 +25,6 @@ def mock_embedder():
 
 
 client = TestClient(app)
-
-
 def test_api_health():
     response = client.get("/health")
     assert response.status_code == 200
@@ -86,7 +84,6 @@ def test_api_disclosure_not_found():
 
 
 def test_api_full_workflow():
-    # 1. Ingest
     response = client.post(
         "/api/ingest",
         files={
@@ -99,7 +96,6 @@ def test_api_full_workflow():
     assert response.status_code == 200
     source_id = response.json()["source_id"]
 
-    # 2. Draft
     response = client.post(
         f"/api/draft/{source_id}",
         json={"report_type": "Public Audit", "audience": "internal"},
@@ -109,21 +105,18 @@ def test_api_full_workflow():
     report_id = data["report_id"]
     assert len(data["spans"]) > 0
 
-    # 3. Provenance
     response = client.get(f"/api/provenance/{report_id}")
     assert response.status_code == 200
     prov_data = response.json()
     assert prov_data["report_id"] == report_id
     assert len(prov_data["spans"]) > 0
 
-    # 4. Consistency
     response = client.post(f"/api/consistency-check/{report_id}")
     assert response.status_code == 200
     const_data = response.json()
     assert const_data["report_id"] == report_id
     assert "consistent" in const_data
 
-    # 5. Disclosure views
     response = client.get(f"/api/disclosure/{report_id}")
     assert response.status_code == 200
     disc_data = response.json()
