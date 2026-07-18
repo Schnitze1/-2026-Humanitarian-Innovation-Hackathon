@@ -1,10 +1,23 @@
+import { useLocation } from "react-router-dom";
+import PageHeader from "../components/layout/PageHeader";
+import WorkflowSteps from "../components/layout/WorkflowSteps";
+import Card from "../components/ui/Card";
+
 function Setup() {
+  const { pathname } = useLocation();
+
   return (
-    <section className="page-placeholder">
-      <p className="eyebrow">Step 1</p>
-      <h1>Report setup</h1>
-      <p>Placeholder for report configuration fields.</p>
-    </section>
+    <>
+      <WorkflowSteps currentPath={pathname} />
+      <PageHeader
+        eyebrow="Step 1"
+        title="Report setup"
+        description="Placeholder for report configuration fields."
+      />
+      <Card>
+        <p style={{ margin: 0 }}>Form fields will be added in a later commit.</p>
+      </Card>
+    </>
   );
 }
 
