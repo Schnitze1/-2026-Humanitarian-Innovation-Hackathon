@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 export const ACCEPTED_EXTENSIONS = [".txt", ".csv", ".md"];
 export const ACCEPTED_ACCEPT_ATTR = ".txt,.csv,.md,text/plain,text/csv,text/markdown";
